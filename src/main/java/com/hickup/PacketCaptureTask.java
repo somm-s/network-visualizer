@@ -1,7 +1,5 @@
 package com.hickup;
 
-import java.util.ArrayList;
-
 import org.pcap4j.core.BpfProgram;
 import org.pcap4j.core.NotOpenException;
 import org.pcap4j.core.PcapHandle;
@@ -10,20 +8,17 @@ import org.pcap4j.core.PcapNetworkInterface;
 import org.pcap4j.core.Pcaps;
 import org.pcap4j.packet.IpV4Packet;
 import org.pcap4j.packet.Packet;
-import java.util.Date;
 import java.util.concurrent.TimeoutException;
 import java.io.EOFException;
-import java.text.SimpleDateFormat;
-import org.pcap4j.core.PcapNativeException;
-import org.pcap4j.core.PcapNetworkInterface;
-import org.pcap4j.core.Pcaps;
-
 import javafx.application.Platform;
-import javafx.beans.property.ReadOnlyObjectProperty;
-import javafx.beans.property.ReadOnlyObjectWrapper;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
+
+// unused imports
+// import java.text.SimpleDateFormat;
+// import java.util.Date;
+// import org.pcap4j.core.PcapNativeException;
+// import org.pcap4j.core.PcapNetworkInterface;
+// import org.pcap4j.core.Pcaps;
 
 public class PacketCaptureTask extends Task<Void> {
 
@@ -38,19 +33,6 @@ public class PacketCaptureTask extends Task<Void> {
         this.receiverIP = receiverIP;
         this.service = service;
     }
-
-    private ReadOnlyObjectWrapper<ObservableList<Data>> partialResults =
-            new ReadOnlyObjectWrapper<>(this, "partialResults",
-                    FXCollections.observableArrayList(new ArrayList<Data>()));
-
-    public final ObservableList<Data> getPartialResults() { 
-        return partialResults.get(); 
-    }
-
-
-    public final ReadOnlyObjectProperty<ObservableList<Data>> partialResultsProperty() {
-        return partialResults.getReadOnlyProperty();
-    } 
     
     @Override protected Void call() throws Exception {
 
@@ -78,15 +60,32 @@ public class PacketCaptureTask extends Task<Void> {
                     e.printStackTrace();
                 }
                 if (packet != null) {
+
+                    // if not IP packet, ignore
+                    if (!packet.contains(IpV4Packet.class)) continue;
+
+                    // extract src and dest IP addresses
+                    String src_addr = packet.get(IpV4Packet.class).getHeader().getSrcAddr().getHostAddress();
+                    String dest_addr  = packet.get(IpV4Packet.class).getHeader().getDstAddr().getHostAddress();
+                    String ip = null;
+
+                    // if receiverIP not in src or dest, ignore. Set isSent according to whether src or dest is receiverIP
                     boolean isSent = false;
-                    if(this.isSentPacket(packet)){
+                    if (src_addr.equals(receiverIP)) {
                         isSent = true;
+                        ip = dest_addr;
+                    } else if (dest_addr.equals(receiverIP)) {
+                        isSent = false;
+                        ip = src_addr;
+                    } else {
+                        continue;
                     }
+
+
                     int packetSize = packet.length();
-                    final Data r = new Data(packetSize, handle.getTimestamp(), isSent);
+                    final Data r = new Data(packetSize, handle.getTimestamp(), isSent, ip);
                     Platform.runLater(new Runnable() { 
                         @Override public void run() {
-                        // partialResults.get().add(r);
                             service.setCapturedData(r);
                         }
                     });

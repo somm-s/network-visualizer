@@ -17,18 +17,18 @@ import javafx.scene.paint.Color;
 import javafx.scene.control.*;
 import javafx.stage.Stage;
 import javafx.util.Duration;
-import javafx.collections.ListChangeListener;
-import javafx.concurrent.Service;
-import javafx.scene.control.ListView;
 
 class Data {
     double val;
     java.sql.Timestamp time;
     boolean isSent;
-    Data(double val, java.sql.Timestamp time, boolean isSent) {
+    String ip;
+
+    Data(double val, java.sql.Timestamp time, boolean isSent, String ip) {
         this.val = val;
         this.time = time;
         this.isSent = isSent;
+        this.ip = ip;
     }
 
     Data(double val, java.sql.Timestamp time) {
@@ -163,17 +163,23 @@ public class RandomTimeSeries extends Application {
                 it.remove();
                 continue;
             }
-
             double y;
             if(d.isSent) {
-                g.setFill(Color.web("#FF9770"));
+                // g.setFill(Color.web("#FF9770"));
+                // set color randomly according to datapoints ip address' hashcode
+                g.setFill(Color.hsb(Math.abs(d.ip.hashCode()) % 360, 1, 1));
                 y = height/2 + (height / 2)*val/maxVal;
 
             } else {
-                g.setFill(Color.web("#70D6FF"));
+                // g.setFill(Color.web("#70D6FF"));
+                // use same color as sent packets but with a slight tweak
+                g.setFill(Color.hsb(Math.abs(d.ip.hashCode()) % 360, 1, 1, 1));
                 y = height/2 - (height / 2)*val/maxVal;
             }
+            // draw a cross at the point
             g.fillOval(x, y, 8, 8);
         }
+
+        
     }
 }
