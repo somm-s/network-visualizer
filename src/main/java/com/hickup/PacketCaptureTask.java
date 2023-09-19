@@ -105,23 +105,4 @@ public class PacketCaptureTask extends Task<Void> {
         }
         return null;
     }
-
-    private boolean isSentPacket(Packet packet) {
-        // Check if the packet contains an IPv4 packet (you can adapt this for IPv6 if needed)
-        if (packet.contains(IpV4Packet.class)) {
-            IpV4Packet ipV4Packet = packet.get(IpV4Packet.class);
-            
-            // Get the source IP address from the IPv4 packet
-            String sourceIpAddress = ipV4Packet.getHeader().getSrcAddr().getHostAddress();
-
-            // Compare the source IP address with the local IP address
-            if (sourceIpAddress.equals(receiverIP)) {
-                return true; // The packet was sent from the local system
-            }
-        } else {
-            // TODO: implement for other packets as well.
-        }
-
-        return false; // The packet was not sent from the local system
-    }
 }
