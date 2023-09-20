@@ -113,7 +113,7 @@ public class MainApplication extends Application {
         Canvas canvas = (Canvas) canvasPane.getChildren().get(0);
         GraphicsContext g = canvas.getGraphicsContext2D();
         g.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
-        g.setFill(Color.web("#CCCCCC"));
+        g.setFill(Color.web("#AAAAAA"));
         g.fillRect(0, 0, canvas.getWidth(), canvas.getHeight());
         double width = canvas.getWidth();
         double height = canvas.getHeight();
@@ -137,9 +137,9 @@ public class MainApplication extends Application {
             }
             
             // if width over a certain threshold, keep speed of data constant
-            double x = width - (current - time) * width / 7000;
+            double x = width - (current - time) * width / 4000;
             if(width > 1000) {
-                x = width - (current - d.time.getTime()) * 1000 / 7000;
+                x = width - (current - d.time.getTime()) * 1000 / 4000;
             }
 
             if(x < 0) {
