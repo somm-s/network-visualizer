@@ -1,4 +1,4 @@
-package com.hickup;
+package com.sandbox;
 
 import java.beans.EventHandler;
 import java.io.EOFException;

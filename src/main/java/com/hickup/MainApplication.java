@@ -5,6 +5,8 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
+import com.hickup.points.IPPoint;
+
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.application.Application;
@@ -18,36 +20,13 @@ import javafx.scene.control.*;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 
-class Data {
-    double val;
-    java.sql.Timestamp time;
-    boolean isSent;
-    String ip;
-
-    Data(double val, java.sql.Timestamp time, boolean isSent, String ip) {
-        this.val = val;
-        this.time = time;
-        this.isSent = isSent;
-        this.ip = ip;
-    }
-
-    Data(double val, java.sql.Timestamp time) {
-        this.val = val;
-        this.time = time;
-        this.isSent = false;
-    }
-
-    public String toString() {
-        return "val: " + val + " time: " + time;
-    }
-}
-public class RandomTimeSeries extends Application {
+public class MainApplication extends Application {
 
     public static void main(String[] args) {
         launch(args);
     }
 
-    LinkedList<Data> data = new LinkedList<Data>();
+    LinkedList<IPPoint> data = new LinkedList<IPPoint>();
 
     @Override
     public void start(Stage stage) throws Exception {
@@ -128,35 +107,39 @@ public class RandomTimeSeries extends Application {
 
     
     // update drawing of time series data. Current time is on the right of the canvas
-    private void drawScene(Pane canvasPane, LinkedList<Data> data) {
+    private void drawScene(Pane canvasPane, LinkedList<IPPoint> data) {
+
+
         Canvas canvas = (Canvas) canvasPane.getChildren().get(0);
         GraphicsContext g = canvas.getGraphicsContext2D();
         g.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
+        g.setFill(Color.web("#CCCCCC"));
+        g.fillRect(0, 0, canvas.getWidth(), canvas.getHeight());
         double width = canvas.getWidth();
         double height = canvas.getHeight();
         double maxVal = 11;
 
 
         // draw x axis
+        g.setStroke(Color.web("#000000"));
         g.strokeLine(0, height/2, width, height/2);
-        // draw y axis
-        // g.strokeLine(width/2, 0, width/2, height);
-        // draw time series data
 
         // use iterator to iterate through linked list:
-        Iterator<Data> it = data.iterator();
+        Iterator<IPPoint> it = data.iterator();
         while(it.hasNext()) {
-            Data d = it.next();
+            IPPoint d = it.next();
             long time = d.time.getTime();
             long current = System.currentTimeMillis();
 
+            double val = d.packetSize;
+            if(d.packetSize > 0) {
+                val = Math.log(d.packetSize) - 2;
+            }
             
-            double val = Math.log(d.val) -2;
-
             // if width over a certain threshold, keep speed of data constant
-            double x = width - (current - time) * width / 5000;
+            double x = width - (current - time) * width / 7000;
             if(width > 1000) {
-                x = width - (current - d.time.getTime()) * 1000 / 5000;
+                x = width - (current - d.time.getTime()) * 1000 / 7000;
             }
 
             if(x < 0) {
@@ -164,22 +147,19 @@ public class RandomTimeSeries extends Application {
                 continue;
             }
             double y;
-            if(d.isSent) {
+            if(d.outgoing) {
                 // g.setFill(Color.web("#FF9770"));
                 // set color randomly according to datapoints ip address' hashcode
                 g.setFill(Color.hsb(Math.abs(d.ip.hashCode()) % 360, 1, 1));
-                y = height/2 + (height / 2)*val/maxVal;
+                y = height / 2 + 4 + (height / 2) * val / maxVal;
 
             } else {
                 // g.setFill(Color.web("#70D6FF"));
                 // use same color as sent packets but with a slight tweak
                 g.setFill(Color.hsb(Math.abs(d.ip.hashCode()) % 360, 1, 1, 1));
-                y = height/2 - (height / 2)*val/maxVal;
+                y = height / 2 - (4 + (height / 2) * val / maxVal);
             }
-            // draw a cross at the point
-            g.fillOval(x, y, 8, 8);
+            d.draw(g, x, y, 8, 8);
         }
-
-        
     }
 }

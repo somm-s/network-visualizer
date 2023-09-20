@@ -1,4 +1,4 @@
-package com.hickup;
+package com.sandbox;
 
 import javax.swing.*;
 import java.io.IOException;

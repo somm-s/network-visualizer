@@ -1,5 +1,7 @@
 package com.hickup;
 
+import com.hickup.points.IPPoint;
+
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
@@ -23,17 +25,17 @@ public class PacketCaptureService extends Service<Void> {
         public final String getReceiverIP() { return receiverIP.get(); }
         public final StringProperty receiverIProperty() { return receiverIP; }
 
-        private ObjectProperty<Data> capturedData = new SimpleObjectProperty<>(this, "capturedData");
+        private ObjectProperty<IPPoint> capturedData = new SimpleObjectProperty<>(this, "capturedData");
 
-        public final void setCapturedData(Data value) {
+        public final void setCapturedData(IPPoint value) {
             capturedData.set(value);
         }
 
-        public final Data getCapturedData() {
+        public final IPPoint getCapturedData() {
             return capturedData.get();
         }
 
-        public final ObjectProperty<Data> capturedDataProperty() {
+        public final ObjectProperty<IPPoint> capturedDataProperty() {
             return capturedData;
         }
 

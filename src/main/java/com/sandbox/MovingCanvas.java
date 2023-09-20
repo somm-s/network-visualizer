@@ -1,4 +1,4 @@
-package com.hickup;
+package com.sandbox;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.application.Application;

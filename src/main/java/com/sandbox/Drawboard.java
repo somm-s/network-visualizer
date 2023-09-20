@@ -1,4 +1,4 @@
-package com.hickup;
+package com.sandbox;
 import javafx.application.Application;
 import javafx.scene.*;
 import javafx.scene.paint.*;

@@ -2,7 +2,7 @@
  * Simple example of a progress bar that makes use of javafx.concurrent.Task.
  */
 
-package com.hickup;
+package com.sandbox;
 
 import javafx.application.Application;
 import javafx.collections.ObservableList;

@@ -8,6 +8,14 @@ import org.pcap4j.core.PcapNetworkInterface;
 import org.pcap4j.core.Pcaps;
 import org.pcap4j.packet.IpV4Packet;
 import org.pcap4j.packet.Packet;
+import org.pcap4j.packet.TcpPacket;
+import org.pcap4j.packet.UdpPacket;
+
+import com.hickup.points.AnyPoint;
+import com.hickup.points.IPPoint;
+import com.hickup.points.TCPPoint;
+import com.hickup.points.UDPPoint;
+
 import java.util.concurrent.TimeoutException;
 import java.io.EOFException;
 import javafx.application.Platform;
@@ -63,7 +71,7 @@ public class PacketCaptureTask extends Task<Void> {
 
                     // if not IP packet, ignore
                     if (!packet.contains(IpV4Packet.class)) continue;
-
+                    
                     // extract src and dest IP addresses
                     String src_addr = packet.get(IpV4Packet.class).getHeader().getSrcAddr().getHostAddress();
                     String dest_addr  = packet.get(IpV4Packet.class).getHeader().getDstAddr().getHostAddress();
@@ -81,12 +89,11 @@ public class PacketCaptureTask extends Task<Void> {
                         continue;
                     }
 
+                    final IPPoint point = createPointFromPacket(packet, handle.getTimestamp(), isSent, ip);
 
-                    int packetSize = packet.length();
-                    final Data r = new Data(packetSize, handle.getTimestamp(), isSent, ip);
                     Platform.runLater(new Runnable() { 
                         @Override public void run() {
-                            service.setCapturedData(r);
+                            service.setCapturedData(point);
                         }
                     });
                 }
@@ -94,15 +101,43 @@ public class PacketCaptureTask extends Task<Void> {
                 e.printStackTrace();
             }
         }
-
-        for (int i=0; i<100; i++) {
-            if (isCancelled()) break;
-
-
-
-
-
-        }
+        handle.close();
         return null;
+    }
+
+    // function to create TCPPoint or UDPPoint from packet, return as IPPoint
+    private IPPoint createPointFromPacket(Packet packet, java.sql.Timestamp time, boolean isSent, String ip) {
+        IPPoint point = null;
+
+        // check if packet is TCP or UDP and create appropriate point
+        if(packet.contains(TcpPacket.class)) {
+            // get payload length from TCPPacket
+            int length = 0;
+            TcpPacket tcpPacket = packet.get(TcpPacket.class);
+            if(tcpPacket.getPayload() != null) {
+                length = tcpPacket.getPayload().length();
+            }
+            TCPPoint tcpPoint = new TCPPoint(length, time, isSent, ip);
+
+            // set flags
+            boolean[] flags = new boolean[6];
+            flags[0] = tcpPacket.getHeader().getFin();
+            flags[1] = tcpPacket.getHeader().getSyn();
+            flags[2] = tcpPacket.getHeader().getRst();
+            flags[3] = tcpPacket.getHeader().getPsh();
+            flags[4] = tcpPacket.getHeader().getAck();
+            flags[5] = tcpPacket.getHeader().getUrg();
+            tcpPoint.setFlags(flags);
+            point = tcpPoint;
+
+        } else if(packet.contains(UdpPacket.class)) {
+            // get payload length from UDPPacket
+            int length = packet.get(UdpPacket.class).getPayload().length();
+            point = new UDPPoint(length, time, isSent, ip);
+        } else {
+            point = new AnyPoint(packet.length(), time, isSent, ip);
+        }
+        return point;
+
     }
 }
