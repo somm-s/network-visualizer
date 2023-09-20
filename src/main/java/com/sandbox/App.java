@@ -1,13 +1,9 @@
 package com.sandbox;
 
-import javax.swing.*;
 import java.io.IOException;
 
 import org.pcap4j.core.*;
-import org.pcap4j.packet.IpPacket;
 import org.pcap4j.packet.Packet;
-import org.pcap4j.packet.namednumber.IpVersion;
-import org.pcap4j.*;
 import org.pcap4j.util.NifSelector;
 import org.pcap4j.util.Packets;
 

@@ -15,13 +15,6 @@ import org.pcap4j.core.PcapHandle;
 import org.pcap4j.core.PcapNativeException;
 import org.pcap4j.core.Pcaps;
 import org.pcap4j.packet.Packet;
-import org.pcap4j.util.NifSelector;
-
-import java.io.EOFException;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
 
 public class FromPcap extends Application {
 

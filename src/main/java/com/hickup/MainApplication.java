@@ -6,6 +6,8 @@ import java.util.LinkedList;
 import java.util.List;
 
 import com.hickup.points.IPPoint;
+import com.hickup.services.PacketCSVService;
+import com.hickup.services.PacketCaptureService;
 
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
@@ -13,7 +15,9 @@ import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
+import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.control.*;
@@ -30,21 +34,106 @@ public class MainApplication extends Application {
 
     @Override
     public void start(Stage stage) throws Exception {
+        HBox root = new HBox();
+        VBox vbox_left = new VBox();
+        VBox vbox_right = new VBox();
+        HBox.setHgrow(vbox_left, Priority.ALWAYS);
+        HBox.setHgrow(vbox_right, Priority.NEVER);
+        root.getChildren().addAll(vbox_left, vbox_right);
+        Scene scene = new Scene(root, 1000, 600);
+        scene.getStylesheets().add(getClass().getResource("/styles.css").toExternalForm());
+        stage.setScene(scene);
+        stage.show();
+
+        // create a service with a PacketCSVTask
+        PacketCSVService csvService = new PacketCSVService();
 
         // Create a service with a PacketCaptureTask
         PacketCaptureService service = new PacketCaptureService();
-        startCapture(service);
-
+        
         // Create a canvas to draw the data
-        initializeCanvas(stage, service);
-
+        initCaptureService(service);
+        initializeCanvas(vbox_left, service);
+        initializeControl(vbox_right, csvService, service);
     }
 
-    void initializeCanvas(Stage stage, PacketCaptureService service) {
-        VBox root = new VBox();
-        Scene scene = new Scene(root, 800, 600);
-        stage.setScene(scene);
-        stage.show();
+    void initializeControl(Pane root, PacketCSVService csvService, PacketCaptureService service) {
+        // Create a TextField to enter the interface to listen to. Add a title before it
+        Label titleLabel = new Label("Visualisation Interface");
+        titleLabel.getStyleClass().add("title-label");
+        Label interfaceLabel = new Label("Select Interface for Visualisation");
+        interfaceLabel.getStyleClass().add("subtitle-label");
+        TextField interfaceTextField = new TextField();
+        interfaceTextField.setPromptText("Enter Interface Name");
+        interfaceTextField.getStyleClass().add("textbox-label");
+        Label observerIPLabel = new Label("Select Host as Observer");
+        observerIPLabel.getStyleClass().add("subtitle-label");
+        TextField observerIPTextField = new TextField();
+        observerIPTextField.setPromptText("Enter Host IP");
+        observerIPTextField.getStyleClass().add("textbox-label");
+
+        // Create a button to restart the PacketCaptureService
+        Button restartButton = new Button("Restart");
+        restartButton.getStyleClass().add("restart-button");
+        restartButton.setOnAction(event -> {
+            String interfaceName = interfaceTextField.getText();
+            String observerIP = observerIPTextField.getText();
+            service.setNetworkInterfaceName(interfaceName);
+            service.setReceiverIP(observerIP);
+            service.restart();
+        });
+
+        // Create a horizontal line to separate the two sections
+        Separator separator = new Separator();
+        separator.getStyleClass().add("separator");
+
+        // Create a label and textfield to enter the file name
+        Label fileNameLabel = new Label("Enter File Name");
+        fileNameLabel.getStyleClass().add("subtitle-label");
+        TextField fileNameTextField = new TextField();
+        fileNameTextField.setPromptText("Enter File Name");
+        fileNameTextField.getStyleClass().add("textbox-label");
+
+        // Create a label and textfield to enter the berkley packet filter string
+        Label filterLabel = new Label("Filter String for Dump");
+        filterLabel.getStyleClass().add("subtitle-label");
+        TextField filterTextField = new TextField();
+        filterTextField.setPromptText("Enter BPF String");
+        filterTextField.getStyleClass().add("textbox-label");
+
+        // Create start and "stop & save" buttons in hbox
+        HBox buttonBox = new HBox();
+        buttonBox.getStyleClass().add("button-box");
+        Button startButton = new Button("Start");
+        startButton.getStyleClass().add("start-button");
+        startButton.setOnAction(event -> {
+            String fileName = fileNameTextField.getText();
+            String filterString = filterTextField.getText();
+            String observerIP = observerIPTextField.getText();
+            String networkInterfaceName = interfaceTextField.getText();
+            csvService.setReceiverIP(observerIP);
+            csvService.setFileName(fileName);
+            csvService.setFilter(filterString);
+            csvService.setNetworkInterfaceName(networkInterfaceName);
+            csvService.restart();
+        });
+
+        Button stopButton = new Button("Stop & Save");
+        stopButton.getStyleClass().add("stop-button");
+        stopButton.setOnAction(event -> {
+            csvService.cancel();
+        });
+
+        buttonBox.getChildren().addAll(startButton, stopButton);
+
+        
+
+        // Add all the elements to the root pane
+        root.getChildren().addAll(titleLabel, interfaceLabel, interfaceTextField, observerIPLabel, observerIPTextField, restartButton, separator, fileNameLabel, fileNameTextField, filterLabel, filterTextField, buttonBox);
+    }
+
+    void initializeCanvas(Pane root, PacketCaptureService service) {
+
 
         // Create a list of canvas panes
         List<Pane> canvasPanes = new ArrayList<Pane>();
@@ -76,6 +165,7 @@ public class MainApplication extends Application {
         );
         timeline.setCycleCount(Timeline.INDEFINITE);
         timeline.play();
+        service.start();
     }
     
     private Pane createCanvasPane() {
@@ -88,7 +178,8 @@ public class MainApplication extends Application {
         return canvasPane;
     }
 
-    private void startCapture(PacketCaptureService service) {
+
+    private void initCaptureService(PacketCaptureService service) {
         
 
         service.setFilter("ip");
@@ -102,7 +193,6 @@ public class MainApplication extends Application {
             }
         });
 
-        service.start();
     }
 
     
@@ -137,9 +227,9 @@ public class MainApplication extends Application {
             }
             
             // if width over a certain threshold, keep speed of data constant
-            double x = width - (current - time) * width / 4000;
+            double x = width - (current - time) * width / 5000;
             if(width > 1000) {
-                x = width - (current - d.time.getTime()) * 1000 / 4000;
+                x = width - (current - d.time.getTime()) * 1000 / 5000;
             }
 
             if(x < 0) {

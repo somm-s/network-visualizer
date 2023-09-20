@@ -1,7 +1,6 @@
 package com.hickup.points;
 
 import javafx.scene.canvas.GraphicsContext;
-import javafx.scene.layout.Pane;
 
 public abstract class IPPoint {
     public int packetSize;

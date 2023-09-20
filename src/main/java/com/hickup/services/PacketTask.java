@@ -1,4 +1,4 @@
-package com.hickup;
+package com.hickup.services;
 
 import org.pcap4j.core.BpfProgram;
 import org.pcap4j.core.NotOpenException;
@@ -8,38 +8,28 @@ import org.pcap4j.core.PcapNetworkInterface;
 import org.pcap4j.core.Pcaps;
 import org.pcap4j.packet.IpV4Packet;
 import org.pcap4j.packet.Packet;
-import org.pcap4j.packet.TcpPacket;
-import org.pcap4j.packet.UdpPacket;
-
-import com.hickup.points.AnyPoint;
-import com.hickup.points.IPPoint;
-import com.hickup.points.TCPPoint;
-import com.hickup.points.UDPPoint;
-
 import java.util.concurrent.TimeoutException;
 import java.io.EOFException;
-import javafx.application.Platform;
 import javafx.concurrent.Task;
 
-// unused imports
-// import java.text.SimpleDateFormat;
-// import java.util.Date;
-// import org.pcap4j.core.PcapNativeException;
-// import org.pcap4j.core.PcapNetworkInterface;
-// import org.pcap4j.core.Pcaps;
-
-public class PacketCaptureTask extends Task<Void> {
+public abstract class PacketTask extends Task<Void> {
 
     final String filter;
     final String networkInterfaceName;
-    final String receiverIP; // 192.168.200.29
-    private PacketCaptureService service;
+    final String receiverIP;
 
-    public PacketCaptureTask(final String filter, final String networkInterfaceName, final String receiverIP, PacketCaptureService service) {
+    public PacketTask(final String filter, final String networkInterfaceName, final String receiverIP) {
         this.filter = filter;
         this.networkInterfaceName = networkInterfaceName;
         this.receiverIP = receiverIP;
-        this.service = service;
+    }
+
+    // override to get task for each packet
+    public abstract void processPacket(Packet packet, PcapHandle handle, boolean isSent, String ip);
+
+    // override to have other functionality. Default is to close handle
+    public void onCancel(PcapHandle handle) {
+        handle.close();
     }
     
     @Override protected Void call() throws Exception {
@@ -53,6 +43,7 @@ public class PacketCaptureTask extends Task<Void> {
             e.printStackTrace();
             System.exit(1);
         }
+
         BpfProgram.BpfCompileMode mode = BpfProgram.BpfCompileMode.OPTIMIZE;
         PcapHandle handle = networkInterface.openLive(65536, PcapNetworkInterface.PromiscuousMode.PROMISCUOUS, 10);
         handle.setFilter(filter, mode);
@@ -89,55 +80,13 @@ public class PacketCaptureTask extends Task<Void> {
                         continue;
                     }
 
-                    final IPPoint point = createPointFromPacket(packet, handle.getTimestamp(), isSent, ip);
-
-                    Platform.runLater(new Runnable() { 
-                        @Override public void run() {
-                            service.setCapturedData(point);
-                        }
-                    });
+                    processPacket(packet, handle, isSent, ip);
                 }
             } catch (PcapNativeException | NotOpenException e) {
                 e.printStackTrace();
             }
         }
-        handle.close();
+        onCancel(handle);
         return null;
-    }
-
-    // function to create TCPPoint or UDPPoint from packet, return as IPPoint
-    private IPPoint createPointFromPacket(Packet packet, java.sql.Timestamp time, boolean isSent, String ip) {
-        IPPoint point = null;
-
-        // check if packet is TCP or UDP and create appropriate point
-        if(packet.contains(TcpPacket.class)) {
-            // get payload length from TCPPacket
-            int length = 0;
-            TcpPacket tcpPacket = packet.get(TcpPacket.class);
-            if(tcpPacket.getPayload() != null) {
-                length = tcpPacket.getPayload().length();
-            }
-            TCPPoint tcpPoint = new TCPPoint(length, time, isSent, ip);
-
-            // set flags
-            boolean[] flags = new boolean[6];
-            flags[0] = tcpPacket.getHeader().getFin();
-            flags[1] = tcpPacket.getHeader().getSyn();
-            flags[2] = tcpPacket.getHeader().getRst();
-            flags[3] = tcpPacket.getHeader().getPsh();
-            flags[4] = tcpPacket.getHeader().getAck();
-            flags[5] = tcpPacket.getHeader().getUrg();
-            tcpPoint.setFlags(flags);
-            point = tcpPoint;
-
-        } else if(packet.contains(UdpPacket.class)) {
-            // get payload length from UDPPacket
-            int length = packet.get(UdpPacket.class).getPayload().length();
-            point = new UDPPoint(length, time, isSent, ip);
-        } else {
-            point = new AnyPoint(packet.length(), time, isSent, ip);
-        }
-        return point;
-
     }
 }

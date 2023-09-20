@@ -1,4 +1,4 @@
-package com.hickup;
+package com.hickup.services;
 
 import com.hickup.points.IPPoint;
 
@@ -39,7 +39,7 @@ public class PacketCaptureService extends Service<Void> {
             return capturedData;
         }
 
-        protected Task createTask() {
+        protected Task<Void> createTask() {
             final String _filter = getFilter();
             final String _networkInterfaceName = getNetworkInterfaceName();
             final String _receiverIP = getReceiverIP();
