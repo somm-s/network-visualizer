@@ -59,9 +59,9 @@ public class MainApplication extends Application {
 
     void initializeControl(Pane root, PacketCSVService csvService, PacketCaptureService service) {
         // Create a TextField to enter the interface to listen to. Add a title before it
-        Label titleLabel = new Label("Visualisation Interface");
+        Label titleLabel = new Label("HiCKUP Monitor");
         titleLabel.getStyleClass().add("title-label");
-        Label interfaceLabel = new Label("Select Interface for Visualisation");
+        Label interfaceLabel = new Label("Select Interface");
         interfaceLabel.getStyleClass().add("subtitle-label");
         TextField interfaceTextField = new TextField();
         interfaceTextField.setPromptText("Enter Interface Name");
@@ -74,7 +74,7 @@ public class MainApplication extends Application {
 
         // Create a button to restart the PacketCaptureService
         Button restartButton = new Button("Restart");
-        restartButton.getStyleClass().add("restart-button");
+        restartButton.getStyleClass().add("button");
         restartButton.setOnAction(event -> {
             String interfaceName = interfaceTextField.getText();
             String observerIP = observerIPTextField.getText();
@@ -86,6 +86,10 @@ public class MainApplication extends Application {
         // Create a horizontal line to separate the two sections
         Separator separator = new Separator();
         separator.getStyleClass().add("separator");
+
+        Label csvLabel = new Label("CSV Dump (Pkt)");
+        csvLabel.getStyleClass().add("title-label");
+
 
         // Create a label and textfield to enter the file name
         Label fileNameLabel = new Label("Enter File Name");
@@ -105,7 +109,7 @@ public class MainApplication extends Application {
         HBox buttonBox = new HBox();
         buttonBox.getStyleClass().add("button-box");
         Button startButton = new Button("Start");
-        startButton.getStyleClass().add("start-button");
+        startButton.getStyleClass().add("button");
         startButton.setOnAction(event -> {
             String fileName = fileNameTextField.getText();
             String filterString = filterTextField.getText();
@@ -119,17 +123,19 @@ public class MainApplication extends Application {
         });
 
         Button stopButton = new Button("Stop & Save");
-        stopButton.getStyleClass().add("stop-button");
+        stopButton.getStyleClass().add("button");
         stopButton.setOnAction(event -> {
             csvService.cancel();
         });
-
+        startButton.setMaxWidth(Double.MAX_VALUE);
+        restartButton.setMaxWidth(Double.MAX_VALUE);
         buttonBox.getChildren().addAll(startButton, stopButton);
-
+        HBox.setHgrow(startButton, Priority.ALWAYS);
+        HBox.setHgrow(stopButton, Priority.ALWAYS);
         
 
         // Add all the elements to the root pane
-        root.getChildren().addAll(titleLabel, interfaceLabel, interfaceTextField, observerIPLabel, observerIPTextField, restartButton, separator, fileNameLabel, fileNameTextField, filterLabel, filterTextField, buttonBox);
+        root.getChildren().addAll(titleLabel, interfaceLabel, interfaceTextField, observerIPLabel, observerIPTextField, restartButton, separator, csvLabel, fileNameLabel, fileNameTextField, filterLabel, filterTextField, buttonBox);
     }
 
     void initializeCanvas(Pane root, PacketCaptureService service) {
