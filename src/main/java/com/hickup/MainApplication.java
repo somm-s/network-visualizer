@@ -31,6 +31,7 @@ public class MainApplication extends Application {
     }
 
     LinkedList<IPPoint> data = new LinkedList<IPPoint>();
+    String receiverIP = "192.168.200.29";
 
     @Override
     public void start(Stage stage) throws Exception {
@@ -76,6 +77,7 @@ public class MainApplication extends Application {
         Button restartButton = new Button("Restart");
         restartButton.getStyleClass().add("button");
         restartButton.setOnAction(event -> {
+            receiverIP = observerIPTextField.getText();
             String interfaceName = interfaceTextField.getText();
             String observerIP = observerIPTextField.getText();
             service.setNetworkInterfaceName(interfaceName);
@@ -243,16 +245,16 @@ public class MainApplication extends Application {
                 continue;
             }
             double y;
-            if(d.outgoing) {
+            if(d.srcIp.equals(receiverIP)){//d.outgoing) {
                 // g.setFill(Color.web("#FF9770"));
                 // set color randomly according to datapoints ip address' hashcode
-                g.setFill(Color.hsb(Math.abs(d.ip.hashCode()) % 360, 1, 1));
+                g.setFill(Color.hsb(Math.abs(d.dstIp.hashCode()) % 360, 1, 1));
                 y = height / 2 + 4 + (height / 2) * val / maxVal;
 
             } else {
                 // g.setFill(Color.web("#70D6FF"));
                 // use same color as sent packets but with a slight tweak
-                g.setFill(Color.hsb(Math.abs(d.ip.hashCode()) % 360, 1, 1, 1));
+                g.setFill(Color.hsb(Math.abs(d.srcIp.hashCode()) % 360, 1, 1, 1));
                 y = height / 2 - (4 + (height / 2) * val / maxVal);
             }
             d.draw(g, x, y, 8, 8);

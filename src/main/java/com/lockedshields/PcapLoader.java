@@ -9,39 +9,55 @@ import org.pcap4j.core.PcapNativeException;
 import org.pcap4j.core.Pcaps;
 import org.pcap4j.packet.Packet;
 
+import com.hickup.points.IPPoint;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.LinkedList;
 import java.util.zip.GZIPInputStream;
 
 public class PcapLoader {
 
-    private static final String PCAP_FILE_PATH = "/home/lab/Documents/networking/hickup-net/kolka-220418-00000101.pcap.gz";
+    String pcapFilePath = "/home/lab/Documents/networking/hickup-net/kolka-220418-00000101.pcap.gz";
+    String tempFileName = "temp.pcap";
 
-    public static void main(String[] args) {
-        System.out.println("Hello, World!");
+    public PcapLoader(String pcapFilePath) {
+        this.pcapFilePath = pcapFilePath;
+    }
 
+    public PcapLoader(String pcapFilePath, String tempFileName) {
+        this.pcapFilePath = pcapFilePath;
+        this.tempFileName = tempFileName;
+    }
+
+    public void loadDataFromPcap(LinkedList<IPPoint> data) {
+        
         // Read the PCAP file
         try {
 
             // decompress pcap.gz file at PCAP_FILE_PATH and store it in a temporary file
-            String tempFile = PcapDecompressor.decompress(PCAP_FILE_PATH);
+            PcapDecompressor.decompress(pcapFilePath, tempFileName);
 
-            PcapHandle handle = Pcaps.openOffline(tempFile);
-
+            PcapHandle handle = Pcaps.openOffline(tempFileName, PcapHandle.TimestampPrecision.NANO);
+            
             handle.setFilter("ip", BpfProgram.BpfCompileMode.OPTIMIZE);
             PacketListener pl = new PacketListener() {
                 @Override
                 public void gotPacket(Packet packet) {
-                    double packetSize = Math.log(packet.length()) - 4;
-                    System.out.println(packetSize);
+                    
+                    // parse packet to IPPoint
+                    IPPoint point = IPPoint.parsePacket(packet, handle.getTimestamp());
+                    if (point != null) {
+                        data.add(point);
+                    }
                 }
             };
             handle.loop(-1, pl);
 
             // delete the temporary file
-            File file = new File("temp.pcap");
+            File file = new File(tempFileName);
             file.delete();
 
         } catch (PcapNativeException | NotOpenException | IOException | InterruptedException e) {
@@ -50,21 +66,19 @@ public class PcapLoader {
         }
 
         System.out.println("Completed!");
-
-        
     }
 }
 
 class PcapDecompressor {
 
     // method to decompress pcap.gz file and store it in a temporary file. Returns the temporary file name.
-    public static String decompress(String filename) throws IOException {
+    public static void decompress(String filename, String tempname) throws IOException {
         // Open the compressed file
         FileInputStream fis = new FileInputStream(filename);
         GZIPInputStream gzis = new GZIPInputStream(fis);
 
         // Create a temporary file to store the decompressed data
-        FileOutputStream fos = new FileOutputStream("temp.pcap");
+        FileOutputStream fos = new FileOutputStream(tempname);
         byte[] buffer = new byte[1024];
         int len;
         while ((len = gzis.read(buffer)) > 0) {
@@ -75,6 +89,5 @@ class PcapDecompressor {
         gzis.close();
         fis.close();
         fos.close();
-        return "temp.pcap";
     }
 }

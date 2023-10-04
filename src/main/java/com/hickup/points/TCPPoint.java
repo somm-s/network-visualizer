@@ -7,10 +7,19 @@ import javafx.scene.canvas.GraphicsContext;
 public class TCPPoint extends IPPoint {
 
     boolean[] flags = new boolean[6]; // FIN, SYN, RST, PSH, ACK, URG
+    int srcPort;
+    int dstPort;
 
-    public TCPPoint(int packetSize, Timestamp time, boolean outgoing, String ip) {
-        super(packetSize, time, outgoing, ip);
+    public TCPPoint(int packetSize, Timestamp time, String srcIp, String dstIp) {
+        super(packetSize, time, srcIp, dstIp);
     }
+
+    public TCPPoint(int packetSize, Timestamp time, String srcIp, String dstIp, int srcPort, int dstPort) {
+        super(packetSize, time, srcIp, dstIp);
+        this.srcPort = srcPort;
+        this.dstPort = dstPort;
+    }
+
 
     @Override
     public void draw(GraphicsContext gc, double x, double y, double width, double height) {

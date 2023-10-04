@@ -89,7 +89,8 @@ public class PacketCaptureTask extends Task<Void> {
                         continue;
                     }
 
-                    final IPPoint point = createPointFromPacket(packet, handle.getTimestamp(), isSent, ip);
+                    // final IPPoint point = createPointFromPacket(packet, handle.getTimestamp(), isSent, ip);
+                    final IPPoint point = IPPoint.parsePacket(packet, handle.getTimestamp());
 
                     Platform.runLater(new Runnable() { 
                         @Override public void run() {
@@ -106,38 +107,38 @@ public class PacketCaptureTask extends Task<Void> {
     }
 
     // function to create TCPPoint or UDPPoint from packet, return as IPPoint
-    private IPPoint createPointFromPacket(Packet packet, java.sql.Timestamp time, boolean isSent, String ip) {
-        IPPoint point = null;
+    // private IPPoint createPointFromPacket(Packet packet, java.sql.Timestamp time, boolean isSent, String ip) {
+    //     IPPoint point = null;
 
-        // check if packet is TCP or UDP and create appropriate point
-        if(packet.contains(TcpPacket.class)) {
-            // get payload length from TCPPacket
-            int length = 0;
-            TcpPacket tcpPacket = packet.get(TcpPacket.class);
-            if(tcpPacket.getPayload() != null) {
-                length = tcpPacket.getPayload().length();
-            }
-            TCPPoint tcpPoint = new TCPPoint(length, time, isSent, ip);
+    //     // check if packet is TCP or UDP and create appropriate point
+    //     if(packet.contains(TcpPacket.class)) {
+    //         // get payload length from TCPPacket
+    //         int length = 0;
+    //         TcpPacket tcpPacket = packet.get(TcpPacket.class);
+    //         if(tcpPacket.getPayload() != null) {
+    //             length = tcpPacket.getPayload().length();
+    //         }
+    //         TCPPoint tcpPoint = new TCPPoint(length, time, isSent, ip);
 
-            // set flags
-            boolean[] flags = new boolean[6];
-            flags[0] = tcpPacket.getHeader().getFin();
-            flags[1] = tcpPacket.getHeader().getSyn();
-            flags[2] = tcpPacket.getHeader().getRst();
-            flags[3] = tcpPacket.getHeader().getPsh();
-            flags[4] = tcpPacket.getHeader().getAck();
-            flags[5] = tcpPacket.getHeader().getUrg();
-            tcpPoint.setFlags(flags);
-            point = tcpPoint;
+    //         // set flags
+    //         boolean[] flags = new boolean[6];
+    //         flags[0] = tcpPacket.getHeader().getFin();
+    //         flags[1] = tcpPacket.getHeader().getSyn();
+    //         flags[2] = tcpPacket.getHeader().getRst();
+    //         flags[3] = tcpPacket.getHeader().getPsh();
+    //         flags[4] = tcpPacket.getHeader().getAck();
+    //         flags[5] = tcpPacket.getHeader().getUrg();
+    //         tcpPoint.setFlags(flags);
+    //         point = tcpPoint;
 
-        } else if(packet.contains(UdpPacket.class)) {
-            // get payload length from UDPPacket
-            int length = packet.get(UdpPacket.class).getPayload().length();
-            point = new UDPPoint(length, time, isSent, ip);
-        } else {
-            point = new AnyPoint(packet.length(), time, isSent, ip);
-        }
-        return point;
+    //     } else if(packet.contains(UdpPacket.class)) {
+    //         // get payload length from UDPPacket
+    //         int length = packet.get(UdpPacket.class).getPayload().length();
+    //         point = new UDPPoint(length, time, isSent, ip);
+    //     } else {
+    //         point = new AnyPoint(packet.length(), time, isSent, ip);
+    //     }
+    //     return point;
 
-    }
+    // }
 }

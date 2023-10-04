@@ -6,8 +6,17 @@ import javafx.scene.canvas.GraphicsContext;
 
 public class UDPPoint extends IPPoint {
 
-    public UDPPoint(int packetSize, Timestamp time, boolean outgoing, String ip) {
-        super(packetSize, time, outgoing, ip);
+    int srcPort;
+    int dstPort;
+
+    public UDPPoint(int packetSize, Timestamp time, String srcIp, String dstIp) {
+        super(packetSize, time, srcIp, dstIp);
+    }
+
+    public UDPPoint(int packetSize, Timestamp time, String srcIp, String dstIp, int srcPort, int dstPort) {
+        super(packetSize, time, srcIp, dstIp);
+        this.srcPort = srcPort;
+        this.dstPort = dstPort;
     }
 
     @Override

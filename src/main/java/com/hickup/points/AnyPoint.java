@@ -5,8 +5,8 @@ import java.sql.Timestamp;
 import javafx.scene.canvas.GraphicsContext;
 
 public class AnyPoint extends IPPoint {
-    public AnyPoint(int packetSize, Timestamp time, boolean outgoing, String ip) {
-        super(packetSize, time, outgoing, ip);
+    public AnyPoint(int packetSize, Timestamp time, String srcIp, String dstIp) {
+        super(packetSize, time, srcIp, dstIp);
     }
 
     @Override
