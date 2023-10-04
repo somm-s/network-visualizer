@@ -74,14 +74,7 @@ public class FromPcap extends Application {
                 }
             };
             handle.loop(-1, pl);
-        } catch (PcapNativeException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (NotOpenException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (InterruptedException e) {
-            // TODO Auto-generated catch block
+        } catch (PcapNativeException | NotOpenException | InterruptedException e) {
             e.printStackTrace();
         }
         return data;
