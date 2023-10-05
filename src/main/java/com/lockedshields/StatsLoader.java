@@ -25,8 +25,8 @@ public class StatsLoader {
     public static void main(String[] args) throws IOException {
         
         // path to folder with pcap files:
-        // String pcapFolderPath = "/media/sosi/490d065d-ed08-4c6e-abd4-184715f06052/2022/BT03-CHE/pcaps";
-        String pcapFolderPath = "/home/lab/Documents/networking/hickup-net/pcaps";
+        String pcapFolderPath = "/media/sosi/490d065d-ed08-4c6e-abd4-184715f06052/2022/BT03-CHE/pcaps";
+        // String pcapFolderPath = "/home/lab/Documents/networking/hickup-net/pcaps";
 
         // get a list with all files in folder:
         File folder = new File(pcapFolderPath);
