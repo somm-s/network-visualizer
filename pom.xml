@@ -121,7 +121,7 @@
                     <createDependencyReducedPom>false</createDependencyReducedPom>
                     <transformers>
                         <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                            <mainClass>com.hickup.GUIStarter</mainClass>
+                            <mainClass>com.lockedshields.StatsLoader</mainClass>
                         </transformer>
                     </transformers>
                   </configuration>
