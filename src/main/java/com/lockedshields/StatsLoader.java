@@ -39,13 +39,17 @@ public class StatsLoader {
         // open the new csv file to write the statistics to. use opencsv library
         String csvFilePath = "stats.csv";
         File csvFile = new File(csvFilePath);
-        CSVWriter writer = new CSVWriter(new FileWriter(csvFile));
-        String[] columnNames = {"ID", "Relative Name", "Time", "Last Packet Time", "Packets", "Bytes", "Packets per Second", "Bytes per Second", "Average Packet Size", "IPs", "Src Ports", "Dst Ports", "Host-to-Host Packets", "Protocols"};
-        writer.writeNext(columnNames);
-        writer.flush();
+        boolean fileExists = csvFile.exists();
+        CSVWriter writer = new CSVWriter(new FileWriter(csvFile, true));
+        if(!fileExists) {
+            // write header (column names
+            String[] columnNames = {"ID", "Relative Name", "Time", "Last Packet Time", "Packets", "Bytes", "Packets per Second", "Bytes per Second", "Average Packet Size", "IPs", "Src Ports", "Dst Ports", "Host-to-Host Packets", "Protocols"};
+            writer.writeNext(columnNames);
+            writer.flush();
+        }
 
         // iterate over all pcap files, decompress them and write the extracted statistics to the csv file
-        for (int i = 101; i < listOfFiles.length; i++) {
+        for (int i = 0; i < listOfFiles.length; i++) {
             String pcapFilePath = listOfFiles[i].getAbsolutePath();
             System.out.println(pcapFilePath);
 
