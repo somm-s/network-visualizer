@@ -6,7 +6,7 @@ import java.util.zip.GZIPInputStream;
 public class PcapDecompressor {
 
     // method to decompress pcap.gz file and store it in a temporary file. Returns the temporary file name.
-    public static void decompress(String filename, String tempname) throws IOException {
+    public static void decompress(String filename, String tempname) throws Exception {
         // Open the compressed file
         FileInputStream fis = new FileInputStream(filename);
         GZIPInputStream gzis = new GZIPInputStream(fis);

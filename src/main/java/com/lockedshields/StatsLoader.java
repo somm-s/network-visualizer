@@ -45,14 +45,19 @@ public class StatsLoader {
         writer.flush();
 
         // iterate over all pcap files, decompress them and write the extracted statistics to the csv file
-        for (int i = 0; i < listOfFiles.length; i++) {
+        for (int i = 101; i < listOfFiles.length; i++) {
             String pcapFilePath = listOfFiles[i].getAbsolutePath();
             System.out.println(pcapFilePath);
 
             // decompress pcap.gz file
             String tempFileName = "temp.pcap";
             
-            PcapDecompressor.decompress(pcapFilePath, tempFileName);
+            try {
+                PcapDecompressor.decompress(pcapFilePath, tempFileName);
+            } catch(Exception e) {
+                System.out.println("Couldn't decompress pcap file: " + listOfFiles[i].getName());
+                continue;
+            }
 
             // variables for csv file:
             // get the name of the pcap file
