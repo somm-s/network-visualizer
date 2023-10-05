@@ -83,26 +83,3 @@ public abstract class IPPoint {
         return res;
     }
 }
-
-
-// class Data {
-//     double val;
-//     java.sql.Timestamp time;
-//     boolean isSent;
-//     String ip;
-
-//     Data(double val, java.sql.Timestamp time, boolean isSent, String ip) {
-//         this.val = val;
-//         this.time = time;
-//         this.isSent = isSent;
-//         this.ip = ip;
-//     }
-
-//     Data(double val, java.sql.Timestamp time) {
-//         this.val = val;
-//         this.time = time;
-//         this.isSent = false;
-//     }
-
-
-// }

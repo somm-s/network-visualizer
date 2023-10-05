@@ -3,20 +3,16 @@ package com.lockedshields;
 import org.pcap4j.core.BpfProgram;
 import org.pcap4j.core.NotOpenException;
 import org.pcap4j.core.PacketListener;
+
 // import pcap4j dependencies
 import org.pcap4j.core.PcapHandle;
 import org.pcap4j.core.PcapNativeException;
 import org.pcap4j.core.Pcaps;
 import org.pcap4j.packet.Packet;
-
 import com.hickup.points.IPPoint;
-
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.LinkedList;
-import java.util.zip.GZIPInputStream;
 
 public class PcapLoader {
 
@@ -66,28 +62,5 @@ public class PcapLoader {
         }
 
         System.out.println("Completed!");
-    }
-}
-
-class PcapDecompressor {
-
-    // method to decompress pcap.gz file and store it in a temporary file. Returns the temporary file name.
-    public static void decompress(String filename, String tempname) throws IOException {
-        // Open the compressed file
-        FileInputStream fis = new FileInputStream(filename);
-        GZIPInputStream gzis = new GZIPInputStream(fis);
-
-        // Create a temporary file to store the decompressed data
-        FileOutputStream fos = new FileOutputStream(tempname);
-        byte[] buffer = new byte[1024];
-        int len;
-        while ((len = gzis.read(buffer)) > 0) {
-            fos.write(buffer, 0, len);
-        }
-
-        // Close the streams
-        gzis.close();
-        fis.close();
-        fos.close();
     }
 }
