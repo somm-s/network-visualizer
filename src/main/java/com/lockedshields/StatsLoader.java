@@ -98,86 +98,89 @@ public class StatsLoader {
             }
             
             while (packet != null) {
-                // count packets
-                packets++;
 
-                // count bytes
-                bytes += packet.length();
-
-                // get the timestamp of the first packet
-                if (time == 0) {
-                    time = handle.getTimestamp().getTime();
-                }
-
-                // get all unique IPs
-                uniqueIPs.add(packet.get(IpPacket.class).getHeader().getSrcAddr().getHostAddress());
-                uniqueIPs.add(packet.get(IpPacket.class).getHeader().getDstAddr().getHostAddress());
-
-                // get all unique ports
-                if (packet.contains(TcpPacket.class)) {
-
-                    // unique ports update (1 if not in map)
-                    String srcPort = packet.get(TcpPacket.class).getHeader().getSrcPort().toString();
-                    if (uniqueSrcPorts.containsKey(srcPort)) {
-                        uniqueSrcPorts.put(srcPort, uniqueSrcPorts.get(srcPort) + 1);
-                    } else {
-                        uniqueSrcPorts.put(srcPort, 1);
-                    }
-
-                    String dstPort = packet.get(TcpPacket.class).getHeader().getDstPort().toString();
-                    if (uniqueDstPorts.containsKey(dstPort)) {
-                        uniqueDstPorts.put(dstPort, uniqueDstPorts.get(dstPort) + 1);
-                    } else {
-                        uniqueDstPorts.put(dstPort, 1);
-                    }
-
-                }
-
-                if (packet.contains(UdpPacket.class)) {
-
-                    // unique ports update (1 if not in map)
-                    String srcPort = packet.get(UdpPacket.class).getHeader().getSrcPort().toString();
-                    if (uniqueSrcPorts.containsKey(srcPort)) {
-                        uniqueSrcPorts.put(srcPort, uniqueSrcPorts.get(srcPort) + 1);
-                    } else {
-                        uniqueSrcPorts.put(srcPort, 1);
-                    }
-
-                    String dstPort = packet.get(UdpPacket.class).getHeader().getDstPort().toString();
-                    if (uniqueDstPorts.containsKey(dstPort)) {
-                        uniqueDstPorts.put(dstPort, uniqueDstPorts.get(dstPort) + 1);
-                    } else {
-                        uniqueDstPorts.put(dstPort, 1);
-                    }
-                }
-
-                // get all unique protocols using packet.get(IpPacket.class).getHeader().getProtocol().toString());
-                String protocol = packet.get(IpPacket.class).getHeader().getProtocol().toString();
-                if (uniqueProtocols.containsKey(protocol)) {
-                    uniqueProtocols.put(protocol, uniqueProtocols.get(protocol) + 1);
-                } else {
-                    uniqueProtocols.put(protocol, 1);
-                }
-
-                // get all unique host-to-host connections
-                String srcIP = packet.get(IpPacket.class).getHeader().getSrcAddr().getHostAddress();
-                String dstIP = packet.get(IpPacket.class).getHeader().getDstAddr().getHostAddress();
-                String key = srcIP + "-" + dstIP;
-                if (uniqueHostToHostPackets.containsKey(key)) {
-                    uniqueHostToHostPackets.put(key, uniqueHostToHostPackets.get(key) + 1);
-                } else {
-                    uniqueHostToHostPackets.put(key, 1);
-                }
 
                 // get the next non-corrupt packet. Set to null if no more packets in stream.
                 while(true) {
                     try {
+
+                        // count packets
+                        packets++;
+
+                        // count bytes
+                        bytes += packet.length();
+
+                        // get the timestamp of the first packet
+                        if (time == 0) {
+                            time = handle.getTimestamp().getTime();
+                        }
+
+                        // get all unique IPs
+                        uniqueIPs.add(packet.get(IpPacket.class).getHeader().getSrcAddr().getHostAddress());
+                        uniqueIPs.add(packet.get(IpPacket.class).getHeader().getDstAddr().getHostAddress());
+
+                        // get all unique ports
+                        if (packet.contains(TcpPacket.class)) {
+
+                            // unique ports update (1 if not in map)
+                            String srcPort = packet.get(TcpPacket.class).getHeader().getSrcPort().toString();
+                            if (uniqueSrcPorts.containsKey(srcPort)) {
+                                uniqueSrcPorts.put(srcPort, uniqueSrcPorts.get(srcPort) + 1);
+                            } else {
+                                uniqueSrcPorts.put(srcPort, 1);
+                            }
+
+                            String dstPort = packet.get(TcpPacket.class).getHeader().getDstPort().toString();
+                            if (uniqueDstPorts.containsKey(dstPort)) {
+                                uniqueDstPorts.put(dstPort, uniqueDstPorts.get(dstPort) + 1);
+                            } else {
+                                uniqueDstPorts.put(dstPort, 1);
+                            }
+
+                        }
+
+                        if (packet.contains(UdpPacket.class)) {
+
+                            // unique ports update (1 if not in map)
+                            String srcPort = packet.get(UdpPacket.class).getHeader().getSrcPort().toString();
+                            if (uniqueSrcPorts.containsKey(srcPort)) {
+                                uniqueSrcPorts.put(srcPort, uniqueSrcPorts.get(srcPort) + 1);
+                            } else {
+                                uniqueSrcPorts.put(srcPort, 1);
+                            }
+
+                            String dstPort = packet.get(UdpPacket.class).getHeader().getDstPort().toString();
+                            if (uniqueDstPorts.containsKey(dstPort)) {
+                                uniqueDstPorts.put(dstPort, uniqueDstPorts.get(dstPort) + 1);
+                            } else {
+                                uniqueDstPorts.put(dstPort, 1);
+                            }
+                        }
+
+                        // get all unique protocols using packet.get(IpPacket.class).getHeader().getProtocol().toString());
+                        String protocol = packet.get(IpPacket.class).getHeader().getProtocol().toString();
+                        if (uniqueProtocols.containsKey(protocol)) {
+                            uniqueProtocols.put(protocol, uniqueProtocols.get(protocol) + 1);
+                        } else {
+                            uniqueProtocols.put(protocol, 1);
+                        }
+
+                        // get all unique host-to-host connections
+                        String srcIP = packet.get(IpPacket.class).getHeader().getSrcAddr().getHostAddress();
+                        String dstIP = packet.get(IpPacket.class).getHeader().getDstAddr().getHostAddress();
+                        String key = srcIP + "-" + dstIP;
+                        if (uniqueHostToHostPackets.containsKey(key)) {
+                            uniqueHostToHostPackets.put(key, uniqueHostToHostPackets.get(key) + 1);
+                        } else {
+                            uniqueHostToHostPackets.put(key, 1);
+                        }
+
                         packet = handle.getNextPacketEx();
                     } catch (PcapNativeException | TimeoutException | NotOpenException | EOFException e) {
                         System.out.println("Finished reading packets from : " + tempFileName);
                         packet = null;
                         break;
-                    } catch (IllegalArgumentException e) {
+                    } catch (Exception e) {
                         System.out.println("corrupt packet, skipped...");
                         continue;
                     }
