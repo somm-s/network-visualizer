@@ -56,7 +56,7 @@ public class PcapLoader {
             File file = new File(tempFileName);
             file.delete();
 
-        } catch (PcapNativeException | NotOpenException | IOException | InterruptedException e) {
+        } catch (Exception e) {
             e.printStackTrace();
             System.out.println("Fail!");
         }
