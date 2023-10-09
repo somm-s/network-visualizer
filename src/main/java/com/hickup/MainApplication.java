@@ -165,7 +165,7 @@ public class MainApplication extends Application {
 
         // Create a timeline for continuously shifting the data to the left
         Timeline timeline = new Timeline(
-            new KeyFrame(Duration.millis(16), event -> {
+            new KeyFrame(Duration.millis(12), event -> {
                 for(Pane canvasPane : canvasPanes) {
                     drawScene(canvasPane, data);
                 }
@@ -211,7 +211,7 @@ public class MainApplication extends Application {
         Canvas canvas = (Canvas) canvasPane.getChildren().get(0);
         GraphicsContext g = canvas.getGraphicsContext2D();
         g.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
-        g.setFill(Color.web("#AAAAAA"));
+        g.setFill(Color.web("#222222"));
         g.fillRect(0, 0, canvas.getWidth(), canvas.getHeight());
         double width = canvas.getWidth();
         double height = canvas.getHeight();
@@ -257,7 +257,7 @@ public class MainApplication extends Application {
                 g.setFill(Color.hsb(Math.abs(d.srcIp.hashCode()) % 360, 1, 1, 1));
                 y = height / 2 - (4 + (height / 2) * val / maxVal);
             }
-            d.draw(g, x, y, 8, 8);
+            d.draw(g, x, y, 10, 10); // initially 8
         }
     }
 }

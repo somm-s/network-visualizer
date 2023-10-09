@@ -1,6 +1,7 @@
 package com.lockedshields;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -31,7 +32,7 @@ public class MainApplication extends Application {
         launch(args);
     }
 
-    LinkedList<IPPoint> data = new LinkedList<IPPoint>();
+    LinkedList<IPPoint> data = new LinkedList<>();
     double timeInterval = 3000; //3000; // timeinterval shown in canvas in nanoseconds
     double startTime = 0; // start time of the data in seconds
     double startXDrag = 0; // start x coordinate of the drag
@@ -48,8 +49,14 @@ public class MainApplication extends Application {
         stage.show();
 
         // initialize data from pcap
-        PcapLoader pcapLoader = new PcapLoader("kolka-220420-00002080.pcap.gz");
-        pcapLoader.loadDataFromPcap(data);
+        // PcapLoader pcapLoader = new PcapLoader("kolka-220420-00002080.pcap.gz");
+        // pcapLoader.loadDataFromPcap(data);
+
+        IPPoint[] arrayData = IPPoint.readFromFile("pcap.ip.csv");
+        // sort arrayData by time
+        Arrays.sort(arrayData, (a, b) -> a.time.compareTo(b.time));
+        data = new LinkedList<>(Arrays.asList(arrayData));
+
 
         // use the first datapoint to adjust the start time
         startTime = data.getFirst().time.getTime();
@@ -185,6 +192,20 @@ public class MainApplication extends Application {
         g.fillRect(width * (startTime - firstPacketTime) / (lastPacketTime - firstPacketTime), height - 20, width * timeInterval / (lastPacketTime - firstPacketTime), 20);
 
 
+        // on top of bar, write at 5 positions the time corresponding to the position. Transform the time in nanoseconds to utf format
+        g.setFill(Color.web("#000000"));
+
+        for(int i = 0; i < 5; i++) {
+            // have some slack at the sides
+            double slack = timeInterval * 0.1;
+            String time = new java.text.SimpleDateFormat("dd-MM-HH:mm:ss:SSS").format(new java.util.Date((long) (startTime + slack + i * (timeInterval - 2 * slack) / 4)));
+            // draw a tick mark on top of the time interval bar
+            double widthSlack = 0.1 * width;
+            g.strokeLine(widthSlack + i * ((width - 2 * widthSlack) / 4), height - 20, widthSlack + i * ((width - 2 * widthSlack) / 4), height - 25);
+            // write the time
+            g.fillText(time, widthSlack + i * ((width - 2 * widthSlack) / 4) - 90, height - 30);
+        }
+
 
         // draw x axis
         g.setStroke(Color.web("#000000"));
@@ -193,12 +214,15 @@ public class MainApplication extends Application {
         // use iterator to iterate through linked list:
         Iterator<IPPoint> it = data.iterator();
         while(it.hasNext()) {
-            IPPoint d = it.next();
 
-            // only show packets that have 10.3.4.5 either as src or dest
-            if(!d.srcIp.equals("151.101.246.137") && !d.dstIp.equals("151.101.246.137")) {
+            IPPoint d = it.next();
+            
+            // if packet has 204.79.197.219 as source or destination remove it
+            if(!d.srcIp.equals("151.101.246.49") && !d.dstIp.equals("151.101.246.49")) {
+                it.remove();
                 continue;
             }
+
 
             // check if data point is in the time interval shown in the canvas
             if(d.time.getTime() < startTime) {
@@ -218,7 +242,7 @@ public class MainApplication extends Application {
 
             double y;
 
-            if(d.srcIp.equals("151.101.246.137")) {
+            if(d.srcIp.equals("10.3.8.34")) {
                 // g.setFill(Color.web("#FF9770"));
                 // set color randomly according to datapoints ip address' hashcode
                 g.setFill(Color.hsb(Math.abs(d.dstIp.hashCode()) % 360, 1, 1));
@@ -227,7 +251,7 @@ public class MainApplication extends Application {
             } else {
                 // g.setFill(Color.web("#70D6FF"));
                 // use same color as sent packets but with a slight tweak
-                g.setFill(Color.hsb(Math.abs(d.dstIp.hashCode()) % 360, 1, 1, 1));
+                g.setFill(Color.hsb(Math.abs(d.srcIp.hashCode()) % 360, 1, 1, 1));
                 y = height / 2 - (4 + (height / 2) * val / maxVal);
             }
             d.draw(g, x, y, 8, 8);

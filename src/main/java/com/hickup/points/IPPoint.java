@@ -1,5 +1,8 @@
 package com.hickup.points;
 
+import java.util.LinkedList;
+import java.util.List;
+
 import org.pcap4j.packet.IpPacket;
 import org.pcap4j.packet.Packet;
 import org.pcap4j.packet.TcpPacket;
@@ -22,10 +25,6 @@ public abstract class IPPoint {
 
     public void draw(GraphicsContext gc, double x, double y, double width, double height) {
         gc.fillOval(x - width / 2, y - height / 2, width, height);
-    }
-
-    public String toString() {
-        return "val: " + packetSize + " time: " + time;
     }
 
     public static IPPoint parsePacket(Packet packet, java.sql.Timestamp time) {
@@ -81,5 +80,48 @@ public abstract class IPPoint {
         }
 
         return res;
+    }
+
+    // serializes to string with toString method of dynamic type
+    public abstract String toString();
+
+    // deserializes from string
+    public static IPPoint fromString(String s) {
+        IPPoint res = null;
+
+        // use deserialization of dynamic type. String in csv style
+        String[] parts = s.split(",");
+        if(parts[0].equals("0")) {
+            res = TCPPoint.fromString(s);
+        } else if(parts[0].equals("1")) {
+            res = UDPPoint.fromString(s);
+        } else if(parts[0].equals("2")) {
+            res = AnyPoint.fromString(s);
+        } else {
+            throw new IllegalArgumentException("Invalid string format");
+        }
+        return res;
+    }
+
+
+    // static function to read ip points from a file. returns array of ippoints.
+    public static IPPoint[] readFromFile(String path) {
+        List<IPPoint> res = new LinkedList<IPPoint>();
+        try {
+            java.io.BufferedReader reader = new java.io.BufferedReader(new java.io.FileReader(path));
+
+            String line = reader.readLine();
+            
+            while(line != null && !line.equals("")) {
+                line = reader.readLine();
+                res.add(IPPoint.fromString(line));
+            }
+
+            reader.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        IPPoint[] res_arr = new IPPoint[res.size()];
+        return res.toArray(res_arr);
     }
 }

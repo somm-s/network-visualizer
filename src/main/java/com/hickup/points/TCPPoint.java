@@ -50,4 +50,42 @@ public class TCPPoint extends IPPoint {
         this.flags = flags;
     }
 
+    @Override
+    public String toString() {
+        // serialize to string
+        String s = "";
+        s += "0,"; // type
+        s += packetSize + ",";
+        s += time + ",";
+        s += srcIp + ",";
+        s += dstIp + ",";
+        s += srcPort + ",";
+        s += dstPort + ",";
+        for(int i = 0; i < flags.length; i++) {
+            if(flags[i]) {
+                s += "1,";
+            } else {
+                s += "0,";
+            }
+        }
+
+        return s;
+    }
+
+    // deserialize from string
+    public static TCPPoint fromString(String string) {
+        String[] parts = string.split(",");
+        TCPPoint tcpPoint = new TCPPoint(Integer.parseInt(parts[1]), Timestamp.valueOf(parts[2]), parts[3], parts[4], Integer.parseInt(parts[5]), Integer.parseInt(parts[6]));
+        boolean[] flags = new boolean[6];
+        for(int i = 0; i < flags.length; i++) {
+            if(parts[7 + i].equals("1")) {
+                flags[i] = true;
+            } else {
+                flags[i] = false;
+            }
+        }
+        tcpPoint.setFlags(flags);
+        return tcpPoint;
+    }
+
 }
