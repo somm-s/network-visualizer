@@ -1,17 +1,14 @@
 package com.lockedshields;
 
 import org.pcap4j.core.BpfProgram;
-import org.pcap4j.core.NotOpenException;
 import org.pcap4j.core.PacketListener;
 
 // import pcap4j dependencies
 import org.pcap4j.core.PcapHandle;
-import org.pcap4j.core.PcapNativeException;
 import org.pcap4j.core.Pcaps;
 import org.pcap4j.packet.Packet;
 import com.hickup.points.IPPoint;
 import java.io.File;
-import java.io.IOException;
 import java.util.LinkedList;
 
 public class PcapLoader {

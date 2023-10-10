@@ -113,8 +113,9 @@ public abstract class IPPoint {
             String line = reader.readLine();
             
             while(line != null && !line.equals("")) {
-                line = reader.readLine();
+                System.out.println(line);
                 res.add(IPPoint.fromString(line));
+                line = reader.readLine();
             }
 
             reader.close();

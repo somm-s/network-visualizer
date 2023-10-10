@@ -8,8 +8,6 @@ import java.util.LinkedList;
 import java.util.List;
 
 import com.hickup.points.IPPoint;
-import com.hickup.services.PacketCSVService;
-import com.hickup.services.PacketCaptureService;
 
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
@@ -17,12 +15,8 @@ import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
-import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
-import javafx.scene.layout.Priority;
-import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
-import javafx.scene.control.*;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 
@@ -52,7 +46,7 @@ public class MainApplication extends Application {
         // PcapLoader pcapLoader = new PcapLoader("kolka-220420-00002080.pcap.gz");
         // pcapLoader.loadDataFromPcap(data);
 
-        IPPoint[] arrayData = IPPoint.readFromFile("pcap.ip.csv");
+        IPPoint[] arrayData = IPPoint.readFromFile("pcap_malicious.ip.csv");
         // sort arrayData by time
         Arrays.sort(arrayData, (a, b) -> a.time.compareTo(b.time));
         data = new LinkedList<>(Arrays.asList(arrayData));
@@ -155,7 +149,7 @@ public class MainApplication extends Application {
         // print out the top 10 most frequent host-to-host connections
         List<String> top10 = new ArrayList<String>(ipMap.keySet());
         top10.sort((a, b) -> ipMap.get(b) - ipMap.get(a));
-        for(int i = 0; i < 100; i++) {
+        for(int i = 0; i < Math.min(100, srcIpMap.size()); i++) {
             System.out.println(top10.get(i) + " " + ipMap.get(top10.get(i)));
         }
     }
@@ -218,10 +212,10 @@ public class MainApplication extends Application {
             IPPoint d = it.next();
             
             // if packet has 204.79.197.219 as source or destination remove it
-            if(!d.srcIp.equals("151.101.246.49") && !d.dstIp.equals("151.101.246.49")) {
-                it.remove();
-                continue;
-            }
+            // if(!d.srcIp.equals("151.101.246.49") && !d.dstIp.equals("151.101.246.49")) {
+            //     it.remove();
+            //     continue;
+            // }
 
 
             // check if data point is in the time interval shown in the canvas
@@ -242,7 +236,7 @@ public class MainApplication extends Application {
 
             double y;
 
-            if(d.srcIp.equals("10.3.8.34")) {
+            if(d.srcIp.equals("10.3.8.5")) {
                 // g.setFill(Color.web("#FF9770"));
                 // set color randomly according to datapoints ip address' hashcode
                 g.setFill(Color.hsb(Math.abs(d.dstIp.hashCode()) % 360, 1, 1));

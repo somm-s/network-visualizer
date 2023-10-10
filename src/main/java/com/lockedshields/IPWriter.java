@@ -28,8 +28,8 @@ public class IPWriter {
 
     public static void main(String[] args) {
         String PCAP_FOLDER_PATH = "/home/lab/Documents/networking/hickup-net/pcaps";
-        String OUTPUT_PATH = "/home/lab/Documents/networking/hickup-net/pcap.ip.csv";
-        String FILTER = "host 10.3.8.34";
+        String OUTPUT_PATH = "/home/lab/Documents/networking/hickup-net/pcap_malicious.ip.csv";
+        String FILTER = "host 10.3.8.5";
 
         IPWriter writer = new IPWriter(PCAP_FOLDER_PATH, OUTPUT_PATH, FILTER);
         try {
