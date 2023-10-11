@@ -1,7 +1,10 @@
 package com.hickup.points;
 
+import java.time.Instant;
+import java.time.format.DateTimeFormatter;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.TimeZone;
 
 import org.pcap4j.packet.IpPacket;
 import org.pcap4j.packet.Packet;
@@ -103,6 +106,33 @@ public abstract class IPPoint {
         return res;
     }
 
+    public static java.sql.Timestamp timeFromString(String timeString) {
+        // Create a DateTimeFormatter with nanoseconds pattern
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSSSSS")
+                .withZone(TimeZone.getTimeZone("UTC").toZoneId());
+
+        // Parse the string to Instant
+        Instant instant = Instant.from(formatter.parse(timeString));
+
+        // Convert Instant to Timestamp
+        java.sql.Timestamp timestamp = java.sql.Timestamp.from(instant);
+
+        return timestamp;
+    }
+
+    public static String timeToString(java.sql.Timestamp timestamp) {
+        // Convert Timestamp to Instant
+        Instant instant = timestamp.toInstant();
+
+        // Create a DateTimeFormatter with nanoseconds pattern
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSSSSS").withZone(TimeZone.getTimeZone("UTC").toZoneId());
+
+        // Format the timestamp with nanoseconds
+        String formattedTimestamp = formatter.format(instant);
+
+        return formattedTimestamp;
+    }
+
 
     // static function to read ip points from a file. returns array of ippoints.
     public static IPPoint[] readFromFile(String path) {
@@ -113,7 +143,6 @@ public abstract class IPPoint {
             String line = reader.readLine();
             
             while(line != null && !line.equals("")) {
-                System.out.println(line);
                 res.add(IPPoint.fromString(line));
                 line = reader.readLine();
             }

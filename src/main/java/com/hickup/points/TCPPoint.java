@@ -56,7 +56,7 @@ public class TCPPoint extends IPPoint {
         String s = "";
         s += "0,"; // type
         s += packetSize + ",";
-        s += time + ",";
+        s += IPPoint.timeToString(time) + ",";
         s += srcIp + ",";
         s += dstIp + ",";
         s += srcPort + ",";
@@ -75,7 +75,8 @@ public class TCPPoint extends IPPoint {
     // deserialize from string
     public static TCPPoint fromString(String string) {
         String[] parts = string.split(",");
-        TCPPoint tcpPoint = new TCPPoint(Integer.parseInt(parts[1]), Timestamp.valueOf(parts[2]), parts[3], parts[4], Integer.parseInt(parts[5]), Integer.parseInt(parts[6]));
+        TCPPoint tcpPoint = new TCPPoint(Integer.parseInt(parts[1]), IPPoint.timeFromString(parts[2]), parts[3], parts[4], Integer.parseInt(parts[5]), Integer.parseInt(parts[6]));
+
         boolean[] flags = new boolean[6];
         for(int i = 0; i < flags.length; i++) {
             if(parts[7 + i].equals("1")) {

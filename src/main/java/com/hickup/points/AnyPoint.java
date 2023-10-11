@@ -22,7 +22,7 @@ public class AnyPoint extends IPPoint {
         String s = "";
         s += "2,"; // type
         s += packetSize + ",";
-        s += time + ",";
+        s += IPPoint.timeToString(time) + ",";
         s += srcIp + ",";
         s += dstIp;
         return s;
@@ -32,7 +32,7 @@ public class AnyPoint extends IPPoint {
         // deserialize from string
         String[] parts = s.split(",");
         int packetSize = Integer.parseInt(parts[1]);
-        Timestamp time = Timestamp.valueOf(parts[2]);
+        Timestamp time = IPPoint.timeFromString(parts[2]);
         String srcIp = parts[3];
         String dstIp = parts[4];
         return new AnyPoint(packetSize, time, srcIp, dstIp);

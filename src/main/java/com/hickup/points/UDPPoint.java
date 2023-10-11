@@ -30,7 +30,7 @@ public class UDPPoint extends IPPoint {
         String s = "";
         s += "1,"; // type
         s += packetSize + ",";
-        s += time + ",";
+        s += IPPoint.timeToString(time) + ",";
         s += srcIp + ",";
         s += dstIp + ",";
         s += srcPort + ",";
@@ -42,7 +42,7 @@ public class UDPPoint extends IPPoint {
         // deserialize from string
         String[] parts = s.split(",");
         int packetSize = Integer.parseInt(parts[1]);
-        Timestamp time = Timestamp.valueOf(parts[2]);
+        Timestamp time = IPPoint.timeFromString(parts[2]);
         String srcIp = parts[3];
         String dstIp = parts[4];
         int srcPort = Integer.parseInt(parts[5]);
