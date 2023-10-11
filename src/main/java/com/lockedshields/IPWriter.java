@@ -1,6 +1,7 @@
 package com.lockedshields;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
@@ -43,8 +44,10 @@ public class IPWriter extends RecursiveTask<Void>{
     }
 
     public static void main(String[] args) {
-        String PCAP_FOLDER_PATH = "/home/lab/Documents/networking/hickup-net/pcaps_diverse";
-        String OUTPUT_PATH = "/home/lab/Documents/networking/hickup-net/output";
+        // String PCAP_FOLDER_PATH = "/home/lab/Documents/networking/hickup-net/pcaps_diverse";
+        // String OUTPUT_PATH = "/home/lab/Documents/networking/hickup-net/output";
+        String PCAP_FOLDER_PATH = "/media/sosi/490d065d-ed08-4c6e-abd4-184715f06052/2022/BT03-CHE/pcaps";
+        String OUTPUT_PATH = "/media/sosi/490d065d-ed08-4c6e-abd4-184715f06052/2022/BT03-CHE/ippoints";
         String FILTER = "ip";
 
         // Create a ForkJoinPool
@@ -67,7 +70,6 @@ public class IPWriter extends RecursiveTask<Void>{
         // Shutdown the ForkJoinPool
         forkJoinPool.shutdown();
     }
-
 
     @Override
     protected Void compute() {
@@ -103,6 +105,7 @@ public class IPWriter extends RecursiveTask<Void>{
                 String b = secondFiles[j].getName();
                 if(a.equals(b)) {
                     conflictingFiles.add(firstFiles[i]);
+                    i++; j++;
                 } else if(a.compareTo(b) < 0) {
                     i++;
                 } else  {
@@ -115,14 +118,14 @@ public class IPWriter extends RecursiveTask<Void>{
                 // open writer to write into start folder:
                 File newFilePath = new File(Paths.get(firstDirectory.getAbsolutePath()).resolve("resolved " + conflictFile.getName()).toString());
                 try {
-                    FileWriter combineWriter = new FileWriter(newFilePath);
+                    BufferedWriter combineWriter = new BufferedWriter(new FileWriter(newFilePath));
 
                     // file 1
-                    File file1 = new File(Paths.get(firstDirectory.getAbsolutePath()).resolve("resolved " + conflictFile.getName()).toString());
+                    File file1 = new File(Paths.get(firstDirectory.getAbsolutePath()).resolve(conflictFile.getName()).toString());
                     BufferedReader reader1 = new BufferedReader(new FileReader(file1));
                     
                     // file 2
-                    File file2 = new File(Paths.get(firstDirectory.getAbsolutePath()).resolve("resolved " + conflictFile.getName()).toString());
+                    File file2 = new File(Paths.get(secondDirectory.getAbsolutePath()).resolve(conflictFile.getName()).toString());
                     BufferedReader reader2 = new BufferedReader(new FileReader(file2));
 
                     String line1 = reader1.readLine();
@@ -136,11 +139,11 @@ public class IPWriter extends RecursiveTask<Void>{
 
                         if(p1.time.getTime() < p2.time.getTime()) {
                             // write p1
-                            combineWriter.write(p1.toString());
+                            combineWriter.write(p1.toString() + "\n");
                             line1 = reader1.readLine();
                         } else {
                             // write p2
-                            combineWriter.write(p2.toString());
+                            combineWriter.write(p2.toString() + "\n");
                             line2 = reader2.readLine();
                         }
                     }
@@ -152,7 +155,7 @@ public class IPWriter extends RecursiveTask<Void>{
                     }
 
                     while(line2 != null && !line2.equals("")) {
-                        p1 = IPPoint.fromString(line2);
+                        p2 = IPPoint.fromString(line2);
                         combineWriter.write(p2.toString() + "\n");
                         line2 = reader2.readLine();
                     }
