@@ -39,6 +39,13 @@
     </dependency>
 
     <dependency>
+        <groupId>org.postgresql</groupId>
+        <artifactId>postgresql</artifactId>
+        <version>42.6.0</version> <!-- Replace with the latest version available -->
+    </dependency>
+
+
+    <dependency>
 	<groupId>org.pcap4j</groupId>
 	<artifactId>pcap4j-packetfactory-static</artifactId>
         <version>1.8.2</version>
