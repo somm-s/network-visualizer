@@ -1,5 +1,8 @@
 package com.hickup.points;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.sql.Timestamp;
 
 import javafx.scene.canvas.GraphicsContext;
@@ -87,6 +90,49 @@ public class TCPPoint extends IPPoint {
         }
         tcpPoint.setFlags(flags);
         return tcpPoint;
+    }
+
+    @Override
+    public void insertPointToSql(Connection connection) throws SQLException {
+        String insertDataSQL = "INSERT INTO packets (timestamp, protocol, size, src_ip, dst_ip, src_port, dst_port, FIN, SYN, RST, PSH, ACK, URG)"
+        + " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        try (PreparedStatement preparedStatement = connection.prepareStatement(insertDataSQL)) {
+            // Set values for parameters
+            preparedStatement.setTimestamp(1, this.time);
+            preparedStatement.setInt(2, this.TCP_PROTOCOL);
+            preparedStatement.setInt(3, this.packetSize);
+            preparedStatement.setString(4, this.srcIp);
+            preparedStatement.setString(5, this.dstIp);         
+            preparedStatement.setInt(6, this.srcPort);
+            preparedStatement.setInt(7, this.dstPort);
+            preparedStatement.setBoolean(8, this.flags[0]);
+            preparedStatement.setBoolean(9, this.flags[1]);
+            preparedStatement.setBoolean(10, this.flags[2]);
+            preparedStatement.setBoolean(11, this.flags[3]);
+            preparedStatement.setBoolean(12, this.flags[4]);
+            preparedStatement.setBoolean(13, this.flags[5]);
+
+            // Execute the SQL statement to insert data
+            preparedStatement.executeUpdate();
+        }
+    }
+
+    @Override
+    public void insertPointToSqlBatch(PreparedStatement preparedStatement) throws SQLException {
+        preparedStatement.setTimestamp(1, this.time);
+        preparedStatement.setInt(2, this.TCP_PROTOCOL);
+        preparedStatement.setInt(3, this.packetSize);
+        preparedStatement.setString(4, this.srcIp);
+        preparedStatement.setString(5, this.dstIp);         
+        preparedStatement.setInt(6, this.srcPort);
+        preparedStatement.setInt(7, this.dstPort);
+        preparedStatement.setBoolean(8, this.flags[0]);
+        preparedStatement.setBoolean(9, this.flags[1]);
+        preparedStatement.setBoolean(10, this.flags[2]);
+        preparedStatement.setBoolean(11, this.flags[3]);
+        preparedStatement.setBoolean(12, this.flags[4]);
+        preparedStatement.setBoolean(13, this.flags[5]);
+        preparedStatement.addBatch();
     }
 
 }

@@ -1,5 +1,8 @@
 package com.hickup.points;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.sql.Timestamp;
 
 import javafx.scene.canvas.GraphicsContext;
@@ -48,5 +51,44 @@ public class UDPPoint extends IPPoint {
         int srcPort = Integer.parseInt(parts[5]);
         int dstPort = Integer.parseInt(parts[6]);
         return new UDPPoint(packetSize, time, srcIp, dstIp, srcPort, dstPort);
+    }
+
+    @Override
+    public void insertPointToSql(Connection connection) throws SQLException {
+        String insertDataSQL = "INSERT INTO packets (timestamp, protocol, size, src_ip, dst_ip, src_port, dst_port)"
+        + " VALUES (?, ?, ?, ?, ?, ?, ?)";
+
+        try (PreparedStatement preparedStatement = connection.prepareStatement(insertDataSQL)) {
+            // Set values for parameters
+            preparedStatement.setTimestamp(1, this.time);
+            preparedStatement.setInt(2, this.UDP_PROTOCOL);
+            preparedStatement.setInt(3, this.packetSize);
+            preparedStatement.setString(4, this.srcIp);
+            preparedStatement.setString(5, this.dstIp);         
+            preparedStatement.setInt(6, this.srcPort);
+            preparedStatement.setInt(7, this.dstPort);
+
+            // Execute the SQL statement to insert data
+            preparedStatement.executeUpdate();
+        }
+    }
+
+
+    @Override
+    public void insertPointToSqlBatch(PreparedStatement preparedStatement) throws SQLException {
+        preparedStatement.setTimestamp(1, this.time);
+        preparedStatement.setInt(2, this.UDP_PROTOCOL);
+        preparedStatement.setInt(3, this.packetSize);
+        preparedStatement.setString(4, this.srcIp);
+        preparedStatement.setString(5, this.dstIp);         
+        preparedStatement.setInt(6, this.srcPort);
+        preparedStatement.setInt(7, this.dstPort);
+        preparedStatement.setNull(8, java.sql.Types.BOOLEAN);
+        preparedStatement.setNull(9, java.sql.Types.BOOLEAN);
+        preparedStatement.setNull(10, java.sql.Types.BOOLEAN);
+        preparedStatement.setNull(11, java.sql.Types.BOOLEAN);
+        preparedStatement.setNull(12, java.sql.Types.BOOLEAN);
+        preparedStatement.setNull(13, java.sql.Types.BOOLEAN);
+        preparedStatement.addBatch();
     }
 }

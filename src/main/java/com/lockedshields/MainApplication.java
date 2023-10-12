@@ -45,7 +45,7 @@ public class MainApplication extends Application {
         // initialize data from pcap
         // PcapLoader pcapLoader = new PcapLoader("kolka-220420-00002080.pcap.gz");
         // pcapLoader.loadDataFromPcap(data);
-
+        
         IPPoint[] arrayData = IPPoint.readFromFiles("/home/lab/Documents/networking/ls22/0", "94.246.231.95");
         // sort arrayData by time
         Arrays.sort(arrayData, (a, b) -> a.time.compareTo(b.time));
