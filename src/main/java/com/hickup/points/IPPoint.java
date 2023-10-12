@@ -1,5 +1,10 @@
 package com.hickup.points;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.nio.file.Paths;
 import java.time.Instant;
 import java.time.format.DateTimeFormatter;
 import java.util.LinkedList;
@@ -151,6 +156,41 @@ public abstract class IPPoint {
         } catch (Exception e) {
             e.printStackTrace();
         }
+        IPPoint[] res_arr = new IPPoint[res.size()];
+        return res.toArray(res_arr);
+    }
+
+    public static IPPoint[] readFromFiles(String folderPath, String filterIP) throws IOException {
+        File folder = new File(folderPath);
+        File[] listOfFiles = folder.listFiles();
+
+        // sort list to have the files in the correct order
+        java.util.Arrays.sort(listOfFiles);
+
+        // List that is returned
+        List<IPPoint> res = new LinkedList<IPPoint>();
+
+        // go over all files
+        for(int i = 0; i < listOfFiles.length; i++) {
+            System.out.println("Reading file " + listOfFiles[i].getName());
+            int numPackets = 0;
+            BufferedReader reader = new BufferedReader(new FileReader(listOfFiles[i]));
+
+            String line = reader.readLine();
+            
+            while(line != null && !line.equals("")) {
+                // apply filter:
+                IPPoint p = IPPoint.fromString(line);
+                if(p.dstIp.equals(filterIP) || p.srcIp.equals(filterIP)) {
+                    res.add(p);
+                    numPackets++;
+                }
+                line = reader.readLine();
+            }
+            System.out.println("Read " + numPackets + " Packets");
+            reader.close();
+        }
+
         IPPoint[] res_arr = new IPPoint[res.size()];
         return res.toArray(res_arr);
     }

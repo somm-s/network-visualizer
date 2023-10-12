@@ -60,7 +60,6 @@ public class IPWriter extends RecursiveTask<Void>{
         // sort list to have the files in the correct order
         java.util.Arrays.sort(listOfFiles);
 
-
         // Create a ForkJoinTask for the main computation
         IPWriter task = new IPWriter(PCAP_FOLDER_PATH, OUTPUT_PATH, FILTER, listOfFiles, 0, listOfFiles.length);
 

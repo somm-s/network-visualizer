@@ -1,0 +1,12 @@
+Commands:
+
+Login as postgres user: sudo -u postgres psql -U postgres -d ls22
+Login as lab user: psql -U lab -d ls22
+Allow lab to create tables in ls22: (login to ls22 as postgres) GRANT ALL ON SCHEMA public TO lab
+
+Create 'lab' role configuration:
+ALTER ROLE lab SET client_encoding TO 'utf8';
+ALTER ROLE lab SET default_transaction_isolation TO 'read committed';
+ALTER ROLE lab SET timezone TO 'UTC';
+GRANT ALL PRIVILEGES ON DATABASE ls22 TO lab;
+
