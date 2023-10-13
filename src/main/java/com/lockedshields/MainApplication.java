@@ -6,9 +6,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-
 import com.hickup.points.IPPoint;
-
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.application.Application;
@@ -27,7 +25,7 @@ public class MainApplication extends Application {
     }
 
     LinkedList<IPPoint> data = new LinkedList<>();
-    double timeInterval = 3000; //3000; // timeinterval shown in canvas in nanoseconds
+    double timeInterval = 3000; //3000; // timeinterval shown in canvas in microseconds
     double startTime = 0; // start time of the data in seconds
     double startXDrag = 0; // start x coordinate of the drag
     double startTimeOnDrag = 0; // start time of the data on drag
@@ -45,17 +43,17 @@ public class MainApplication extends Application {
         // initialize data from pcap
         // PcapLoader pcapLoader = new PcapLoader("kolka-220420-00002080.pcap.gz");
         // pcapLoader.loadDataFromPcap(data);
-        
-        IPPoint[] arrayData = IPPoint.readFromFiles("/home/lab/Documents/networking/ls22/0", "94.246.231.95");
+
+        IPPoint[] arrayData = IPPoint.readFromFile("/home/lab/Documents/networking/ls22/0/2022-04-18 21:22.csv");
         // sort arrayData by time
-        Arrays.sort(arrayData, (a, b) -> a.time.compareTo(b.time));
+        Arrays.sort(arrayData);
         data = new LinkedList<>(Arrays.asList(arrayData));
 
 
         // use the first datapoint to adjust the start time
-        startTime = data.getFirst().time.getTime();
-        firstPacketTime = data.getFirst().time.getTime();
-        lastPacketTime = data.getLast().time.getTime();
+        startTime = data.getFirst().getMicroseconds();
+        firstPacketTime = data.getFirst().getMicroseconds();
+        lastPacketTime = data.getLast().getMicroseconds();
         printStats(data);
 
 
@@ -73,7 +71,7 @@ public class MainApplication extends Application {
 
             // adjust the start time so that the middle of the time interval stays the same
             startTime += (lastInterval - timeInterval) / 2;
-            System.out.println("time interval: " + timeInterval + "delta " + event.getDeltaY());
+            // System.out.println("time interval: " + timeInterval + "delta " + event.getDeltaY());
         });
 
         // add listener for drag and drop to control the start time of the data shown in the canvas
@@ -81,7 +79,7 @@ public class MainApplication extends Application {
         canvas.setOnMousePressed(event -> {
             startXDrag = event.getX();
             startTimeOnDrag = startTime;
-            System.out.println("drag entered" + startXDrag);
+            // System.out.println("drag entered" + startXDrag);
         });
 
         canvas.setOnMouseDragged(event -> {
@@ -170,7 +168,7 @@ public class MainApplication extends Application {
         Canvas canvas = (Canvas) canvasPane.getChildren().get(0);
         GraphicsContext g = canvas.getGraphicsContext2D();
         g.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
-        g.setFill(Color.web("#AAAAAA"));
+        g.setFill(Color.web("#222222"));
         g.fillRect(0, 0, canvas.getWidth(), canvas.getHeight());
         double width = canvas.getWidth();
         double height = canvas.getHeight();
@@ -178,21 +176,21 @@ public class MainApplication extends Application {
 
 
         // draw bar at the bottom indicating the time interval shown in the canvas
-        g.setStroke(Color.web("#000000"));
+        g.setStroke(Color.web("#CCCCCC"));
         g.strokeLine(0, height - 20, width, height - 20);
         // use dark gray
-        g.setFill(Color.web("#444444"));
+        g.setFill(Color.web("#AAAAAA"));
         // fill a rect corresponding to the current window.
         g.fillRect(width * (startTime - firstPacketTime) / (lastPacketTime - firstPacketTime), height - 20, width * timeInterval / (lastPacketTime - firstPacketTime), 20);
 
 
         // on top of bar, write at 5 positions the time corresponding to the position. Transform the time in nanoseconds to utf format
-        g.setFill(Color.web("#000000"));
+        g.setFill(Color.web("#FFFFFF"));
 
         for(int i = 0; i < 5; i++) {
             // have some slack at the sides
             double slack = timeInterval * 0.1;
-            String time = new java.text.SimpleDateFormat("dd-MM-HH:mm:ss:SSS").format(new java.util.Date((long) (startTime + slack + i * (timeInterval - 2 * slack) / 4)));
+            String time = IPPoint.timeFormatter.format(IPPoint.microToInstant((long) (startTime + slack + i * (timeInterval - 2 * slack) / 4)));
             // draw a tick mark on top of the time interval bar
             double widthSlack = 0.1 * width;
             g.strokeLine(widthSlack + i * ((width - 2 * widthSlack) / 4), height - 20, widthSlack + i * ((width - 2 * widthSlack) / 4), height - 25);
@@ -208,31 +206,18 @@ public class MainApplication extends Application {
         // use iterator to iterate through linked list:
         Iterator<IPPoint> it = data.iterator();
         while(it.hasNext()) {
-
             IPPoint d = it.next();
-            
-            // if packet has 204.79.197.219 as source or destination remove it
-            // if(!d.srcIp.equals("151.101.246.49") && !d.dstIp.equals("151.101.246.49")) {
-            //     it.remove();
-            //     continue;
-            // }
-
 
             // check if data point is in the time interval shown in the canvas
-            if(d.time.getTime() < startTime) {
+            if(d.getMicroseconds() < startTime) {
                 continue;
             }
-            if(d.time.getTime() > startTime + timeInterval) {
+            if(d.getMicroseconds() > startTime + timeInterval) {
                 break; // data points are sorted by time, so we can break here
             }
 
             // calculate x and y coordinates of the data point
-            double x = width * (d.time.getTime() - startTime) / timeInterval;
-
-            double val = d.packetSize;
-            if(d.packetSize > 0) {
-                val = Math.log(d.packetSize) - 2;
-            }
+            double x = (d.getMicroseconds() - startTime) * (width / timeInterval);
 
             double y;
 
@@ -240,13 +225,13 @@ public class MainApplication extends Application {
                 // g.setFill(Color.web("#FF9770"));
                 // set color randomly according to datapoints ip address' hashcode
                 g.setFill(Color.hsb(Math.abs(d.dstIp.hashCode()) % 360, 1, 1));
-                y = height / 2 + 4 + (height / 2) * val / maxVal;
+                y = height / 2 + 4 + (height / 2) * d.val / maxVal;
 
             } else {
                 // g.setFill(Color.web("#70D6FF"));
                 // use same color as sent packets but with a slight tweak
                 g.setFill(Color.hsb(Math.abs(d.srcIp.hashCode()) % 360, 1, 1, 1));
-                y = height / 2 - (4 + (height / 2) * val / maxVal);
+                y = height / 2 - (4 + (height / 2) * d.val / maxVal);
             }
             d.draw(g, x, y, 8, 8);
         }

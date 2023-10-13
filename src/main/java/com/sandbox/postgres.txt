@@ -10,3 +10,7 @@ ALTER ROLE lab SET default_transaction_isolation TO 'read committed';
 ALTER ROLE lab SET timezone TO 'UTC';
 GRANT ALL PRIVILEGES ON DATABASE ls22 TO lab;
 
+
+
+NEXT TIME USE BULK INSERT! (much more efficient)
+Also store files in correct csv format.

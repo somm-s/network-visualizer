@@ -22,11 +22,12 @@ import org.pcap4j.packet.UdpPacket;
 
 import javafx.scene.canvas.GraphicsContext;
 
-public abstract class IPPoint {
+public abstract class IPPoint implements Comparable<IPPoint>{
 
     static String url = "jdbc:postgresql://localhost:5432/ls22";
     static String user = "lab";
     static String password = "lab";
+    public static DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSSSSS").withZone(TimeZone.getTimeZone("UTC").toZoneId());
     public static Connection connection;
 
     public final int UDP_PROTOCOL = 1;
@@ -38,12 +39,16 @@ public abstract class IPPoint {
     public java.sql.Timestamp time;
     public String srcIp;
     public String dstIp;
+    public double val;
     
     public IPPoint(int packetSize, java.sql.Timestamp time, String srcIp, String dstIp) {
         this.packetSize = packetSize;
         this.time = time;
         this.srcIp = srcIp;
         this.dstIp = dstIp;
+        if(packetSize > 0) {
+            this.val = Math.log(packetSize) - 2;
+        }
     }
 
     public static void connect() {
@@ -157,12 +162,8 @@ public abstract class IPPoint {
     }
 
     public static java.sql.Timestamp timeFromString(String timeString) {
-        // Create a DateTimeFormatter with nanoseconds pattern
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSSSSS")
-                .withZone(TimeZone.getTimeZone("UTC").toZoneId());
-
         // Parse the string to Instant
-        Instant instant = Instant.from(formatter.parse(timeString));
+        Instant instant = Instant.from(timeFormatter.parse(timeString));
 
         // Convert Instant to Timestamp
         java.sql.Timestamp timestamp = java.sql.Timestamp.from(instant);
@@ -174,11 +175,8 @@ public abstract class IPPoint {
         // Convert Timestamp to Instant
         Instant instant = timestamp.toInstant();
 
-        // Create a DateTimeFormatter with nanoseconds pattern
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSSSSS").withZone(TimeZone.getTimeZone("UTC").toZoneId());
-
         // Format the timestamp with nanoseconds
-        String formattedTimestamp = formatter.format(instant);
+        String formattedTimestamp = timeFormatter.format(instant);
 
         return formattedTimestamp;
     }
@@ -288,5 +286,27 @@ public abstract class IPPoint {
             System.out.println("Ingested " + numPackets + " Packets");
             reader.close();
         }
+    }
+
+    public static long getMicroseconds(java.sql.Timestamp time) {
+        Instant instant = time.toInstant();
+        long micros = instant.toEpochMilli() * 1000 + instant.getNano() / 1000;
+
+        return micros;
+    }
+
+    public long getMicroseconds() {
+        return IPPoint.getMicroseconds(this.time);
+    }
+
+    public static Instant microToInstant(long micros) {
+        long millis = micros / 1000;
+        int nanos = (int) ((micros % 1000) * 1000);
+        return Instant.ofEpochMilli(millis).plusNanos(nanos);
+    }
+    
+    @Override
+    public int compareTo(IPPoint other) {
+        return Long.compare(this.getMicroseconds(), other.getMicroseconds());
     }
 }
