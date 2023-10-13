@@ -44,7 +44,7 @@ public class MainApplication extends Application {
         // PcapLoader pcapLoader = new PcapLoader("kolka-220420-00002080.pcap.gz");
         // pcapLoader.loadDataFromPcap(data);
 
-        IPPoint[] arrayData = IPPoint.readFromFile("/home/lab/Documents/networking/ls22/0/2022-04-18 21:22.csv");
+        IPPoint[] arrayData = IPPoint.readFromFile("/home/lab/Documents/networking/hickup-net/pcap_malicious.ip.csv");
         // sort arrayData by time
         Arrays.sort(arrayData);
         data = new LinkedList<>(Arrays.asList(arrayData));

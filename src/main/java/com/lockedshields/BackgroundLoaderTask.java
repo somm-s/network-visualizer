@@ -6,22 +6,31 @@ import javafx.concurrent.Task;
 public class BackgroundLoaderTask extends Task<Void> {
 
     private DataBuffer dataBuffer;
+    private String startTime;
+    private String endTime;
+    private String observer;
+    private String dstHost;
 
-    public BackgroundLoaderTask(DataBuffer dataBuffer) {
+    public BackgroundLoaderTask(DataBuffer dataBuffer, String startTime, String endTime, String observer, String dstHost) {
+        this.startTime = startTime;
+        this.endTime = endTime;
+        this.observer = observer;
+        this.dstHost = dstHost;
         this.dataBuffer = dataBuffer;
     }
 
     @Override
     protected Void call() {
-        // Background loading logic
-        // ...
 
-        // Once loading is complete, update the data buffer
-        IPPoint[] loadedData = null;
-        dataBuffer.setData(loadedData);
+        // connecting to database
+        IPPoint.connect();
 
-        // Optionally trigger a refresh or update of the custom canvas
-        // customCanvas.render();
+        System.out.println("Loading data from database");
+        // sql query retreiving all packets from table 'packets'
+
+        IPPoint[] data = IPPoint.getPointsFromSQL(startTime, endTime, observer, dstHost);
+        System.out.println("Data loaded from database");
+        dataBuffer.setData(data, observer);
 
         return null;
     }

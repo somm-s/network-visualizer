@@ -2,6 +2,7 @@ package com.hickup.points;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 
@@ -73,5 +74,13 @@ public class AnyPoint extends IPPoint {
         preparedStatement.setNull(12, java.sql.Types.BOOLEAN);
         preparedStatement.setNull(13, java.sql.Types.BOOLEAN);
         preparedStatement.addBatch();
+    }
+
+    public static AnyPoint fromResultSet(ResultSet resultSet) throws SQLException {
+        Timestamp time = resultSet.getTimestamp("timestamp");
+        int packetSize = resultSet.getInt("size");
+        String srcIp = resultSet.getString("src_ip");
+        String dstIp = resultSet.getString("dst_ip");
+        return new AnyPoint(packetSize, time, srcIp, dstIp);
     }
 }

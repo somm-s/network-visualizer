@@ -1,5 +1,6 @@
 package com.lockedshields;
 
+import javafx.event.ActionEvent;
 import javafx.event.Event;
 import javafx.event.EventHandler;
 import javafx.scene.input.MouseEvent;
@@ -8,12 +9,16 @@ import javafx.scene.input.ScrollEvent;
 public class UIEventHandler implements EventHandler<Event>{
 
     DataBuffer dataBuffer;
+    TimelineCanvas canvas;
 
-    long startXDrag = 0;
+    double startXDrag = 0;
     long startTimeOnDrag = 0;
 
-    public UIEventHandler(DataBuffer dataBuffer) {
+    private boolean isCanvasActive = false;
+
+    public UIEventHandler(DataBuffer dataBuffer, TimelineCanvas canvas) {
         this.dataBuffer = dataBuffer;
+        this.canvas = canvas;
     }
 
     @Override
@@ -27,19 +32,32 @@ public class UIEventHandler implements EventHandler<Event>{
 
     private void handleMouseEvent(MouseEvent event) {
         if (event.getEventType() == MouseEvent.MOUSE_PRESSED) {
-            System.out.println("Mouse Pressed");
-            // Handle OnMousePressed event
+            startXDrag = event.getX();
+            startTimeOnDrag = dataBuffer.startTime;
+
         } else if (event.getEventType() == MouseEvent.MOUSE_DRAGGED) {
-            System.out.println("Mouse Dragged");
-            // Handle OnMouseDragged event
+            double delta = event.getX() - startXDrag;
+            // adjust start time
+            long startTime = (long) (startTimeOnDrag - delta * dataBuffer.timeInterval / canvas.getWidth());
+            dataBuffer.setStartTime(startTime);
+
+        } else if (event.getEventType() == MouseEvent.MOUSE_ENTERED) {
+            // check if mouse entered canvas
+            if (event.getTarget() == canvas) {
+                isCanvasActive = true;
+            }
+
+        } else if (event.getEventType() == MouseEvent.MOUSE_EXITED) {
+            // check if mouse exited canvas
+            if (event.getTarget() == canvas) {
+                isCanvasActive = false;
+            }
+            
         }
     }
 
     private void handleScrollEvent(ScrollEvent event) {
-        System.out.println("Scrolling");
-        // Handle scrolling and extract deltaY
         double deltaY = event.getDeltaY();
-        System.out.println("DeltaY: " + deltaY);
-    }
-    
+        dataBuffer.setScrollDelta(deltaY);
+    }    
 }

@@ -2,6 +2,7 @@ package com.hickup.points;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 
@@ -90,5 +91,18 @@ public class UDPPoint extends IPPoint {
         preparedStatement.setNull(12, java.sql.Types.BOOLEAN);
         preparedStatement.setNull(13, java.sql.Types.BOOLEAN);
         preparedStatement.addBatch();
+
+    }
+
+    public static UDPPoint fromResultSet(ResultSet resultSet) throws SQLException {
+
+        int packetSize = resultSet.getInt("size");
+        Timestamp time = resultSet.getTimestamp("timestamp");
+        String srcIp = resultSet.getString("src_ip");
+        String dstIp = resultSet.getString("dst_ip");
+        int srcPort = resultSet.getInt("src_port");
+        int dstPort = resultSet.getInt("dst_port");
+        return new UDPPoint(packetSize, time, srcIp, dstIp, srcPort, dstPort);
+
     }
 }

@@ -7,10 +7,12 @@ import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.time.Instant;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.TimeZone;
@@ -30,9 +32,9 @@ public abstract class IPPoint implements Comparable<IPPoint>{
     public static DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSSSSS").withZone(TimeZone.getTimeZone("UTC").toZoneId());
     public static Connection connection;
 
-    public final int UDP_PROTOCOL = 1;
-    public final int TCP_PROTOCOL = 0;
-    public final int ANY_PROTOCOL = 2;
+    public static final int UDP_PROTOCOL = 1;
+    public static final int TCP_PROTOCOL = 0;
+    public static final int ANY_PROTOCOL = 2;
 
 
     public int packetSize;
@@ -77,6 +79,68 @@ public abstract class IPPoint implements Comparable<IPPoint>{
         } catch (SQLException e) {
             System.err.println("Error connecting to the PostgreSQL server: " + e.getMessage());
         }
+    }
+
+    public static IPPoint[] getPointsFromSQL(String startTime, String endTime, String observedHost, String dstHost) {
+        // if connection to sql is not established, connect
+        if(connection == null) {
+            connect();
+        }
+
+        String query = "SELECT * FROM packets WHERE 1 = 1";
+        if(!observedHost.equals("")) {
+            query += " AND (src_ip = '" + observedHost + "' OR dst_ip = '" + observedHost + "')";
+        }
+        if(!dstHost.equals("")) {
+            query += " AND (src_ip = '" + dstHost + "' OR dst_ip = '" + dstHost + "')";
+        }
+        if(!startTime.equals("") && !endTime.equals("")) {
+            query += " AND timestamp BETWEEN '" + startTime + "' AND '" + endTime + "'";
+        }
+        query += ";";
+        System.out.println(query);
+        IPPoint[] res = null;
+
+        try {
+            PreparedStatement statement = connection.prepareStatement(query);
+            res = getPointsFromPreparedStatement(statement);
+        } catch (SQLException e) {
+            System.err.println("Error executing query: " + e.getMessage());
+        }
+
+        return res;
+    }
+
+    public static IPPoint ipPointFromResultSet(ResultSet resultSet) {
+        IPPoint res = null;
+        try {
+            if(resultSet.getInt("protocol") == TCP_PROTOCOL) {
+                res = TCPPoint.fromResultSet(resultSet);
+            } else if(resultSet.getInt("protocol") == UDP_PROTOCOL) {
+                res = UDPPoint.fromResultSet(resultSet);
+            } else {
+                res = AnyPoint.fromResultSet(resultSet);
+            }
+        } catch (SQLException e) {
+            System.err.println("Error executing query: " + e.getMessage());
+        }
+        return res;
+    }
+
+    private static IPPoint[] getPointsFromPreparedStatement(PreparedStatement preparedStatement) {
+        LinkedList<IPPoint> res = new LinkedList<IPPoint>();
+        try {
+            ResultSet resultSet = preparedStatement.executeQuery();
+            while(resultSet.next()) {
+                IPPoint p = ipPointFromResultSet(resultSet);
+                res.add(p);
+            }
+        } catch (SQLException e) {
+            System.err.println("Error executing query: " + e.getMessage());
+        }
+
+        IPPoint[] res_arr = new IPPoint[res.size()];
+        return res.toArray(res_arr);
     }
 
 

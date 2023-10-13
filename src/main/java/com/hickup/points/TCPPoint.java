@@ -2,6 +2,7 @@ package com.hickup.points;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 
@@ -133,6 +134,27 @@ public class TCPPoint extends IPPoint {
         preparedStatement.setBoolean(12, this.flags[4]);
         preparedStatement.setBoolean(13, this.flags[5]);
         preparedStatement.addBatch();
+    }
+
+    public static TCPPoint fromResultSet(ResultSet resultSet) throws SQLException {
+
+        Timestamp time = resultSet.getTimestamp("timestamp");
+        int packetSize = resultSet.getInt("size");
+        String srcIp = resultSet.getString("src_ip");
+        String dstIp = resultSet.getString("dst_ip");
+        int srcPort = resultSet.getInt("src_port");
+        int dstPort = resultSet.getInt("dst_port");
+        boolean[] flags = new boolean[6];
+        flags[0] = resultSet.getBoolean("FIN");
+        flags[1] = resultSet.getBoolean("SYN");
+        flags[2] = resultSet.getBoolean("RST");
+        flags[3] = resultSet.getBoolean("PSH");
+        flags[4] = resultSet.getBoolean("ACK");
+        flags[5] = resultSet.getBoolean("URG");
+
+        TCPPoint tcpPoint = new TCPPoint(packetSize, time, srcIp, dstIp, srcPort, dstPort);
+        tcpPoint.setFlags(flags);
+        return tcpPoint;
     }
 
 }
