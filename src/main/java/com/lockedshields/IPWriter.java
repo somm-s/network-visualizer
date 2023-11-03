@@ -46,9 +46,13 @@ public class IPWriter extends RecursiveTask<Void>{
     public static void main(String[] args) {
         // String PCAP_FOLDER_PATH = "/home/lab/Documents/networking/hickup-net/pcaps_diverse";
         // String OUTPUT_PATH = "/home/lab/Documents/networking/hickup-net/output";
-        String PCAP_FOLDER_PATH = "/media/sosi/490d065d-ed08-4c6e-abd4-184715f06052/2022/BT03-CHE/pcaps";
-        String OUTPUT_PATH = "/media/sosi/490d065d-ed08-4c6e-abd4-184715f06052/2022/BT03-CHE/ippoints";
-        String FILTER = "ip";
+        // String PCAP_FOLDER_PATH = "/media/sosi/490d065d-ed08-4c6e-abd4-184715f06052/2022/BT03-CHE/pcaps";
+        // String OUTPUT_PATH = "/media/sosi/490d065d-ed08-4c6e-abd4-184715f06052/2022/BT03-CHE/ippoints";
+
+        String PCAP_FOLDER_PATH = "pcaps";
+        String OUTPUT_PATH = "output";
+
+        String FILTER = "";
 
         // Create a ForkJoinPool
         ForkJoinPool forkJoinPool = ForkJoinPool.commonPool();
@@ -232,6 +236,7 @@ public class IPWriter extends RecursiveTask<Void>{
         PacketListener pl = new PacketListener() {
             @Override
             public void gotPacket(Packet packet) {
+
                 // parse packet to IPPoint
                 IPPoint point = IPPoint.parsePacket(packet, handle.getTimestamp());
                 if(point == null) {

@@ -1,13 +1,11 @@
 package com.lockedshields;
 
 import javafx.application.Application;
-import javafx.event.ActionEvent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.Separator;
 import javafx.scene.control.TextField;
-import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.Priority;
@@ -65,6 +63,7 @@ public class LSApplication extends Application {
     }
  
     private void initializeControl(UIEventHandler uiEventHandler, UIButtonHandler uiButtonHandler, VBox controlPane) {
+
         // Create a TextField to enter the interface to listen to. Add a title before it
         Label titleLabel = new Label("LS Visualizer");
         titleLabel.getStyleClass().add("title-label");
@@ -131,7 +130,6 @@ public class LSApplication extends Application {
         buttonBox.getChildren().addAll(filterButton, retrieveButton);
         HBox.setHgrow(filterButton, Priority.ALWAYS);
         HBox.setHgrow(retrieveButton, Priority.ALWAYS);
-
 
         // Add all the elements to the root pane
         controlPane.getChildren().addAll(titleLabel, startTimeLabel, startTimeTextField, endTimeLabel, endTimeTextField, observedHostLabel, observedHostTextField, dstHostLabel, dstHostTextField, separator, buttonBox);

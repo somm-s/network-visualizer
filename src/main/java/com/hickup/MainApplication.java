@@ -207,7 +207,6 @@ public class MainApplication extends Application {
     // update drawing of time series data. Current time is on the right of the canvas
     private void drawScene(Pane canvasPane, LinkedList<IPPoint> data) {
 
-
         Canvas canvas = (Canvas) canvasPane.getChildren().get(0);
         GraphicsContext g = canvas.getGraphicsContext2D();
         g.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());

@@ -9,7 +9,7 @@ import java.util.concurrent.RecursiveTask;
 
 import com.hickup.points.IPPoint;
 
-public class ParallelSqlInjector extends RecursiveTask<Void>{
+public class ParallelSqlIngestion extends RecursiveTask<Void>{
     
     File[] listOfFiles;
     int start;
@@ -18,7 +18,7 @@ public class ParallelSqlInjector extends RecursiveTask<Void>{
     String insertDataSQL = "INSERT INTO packets (timestamp, protocol, size, src_ip, dst_ip, src_port, dst_port, FIN, SYN, RST, PSH, ACK, URG)"
         + " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
-    public ParallelSqlInjector(String pcapFolderPath, File[] listOfFiles, int start, int end) {
+    public ParallelSqlIngestion(String pcapFolderPath, File[] listOfFiles, int start, int end) {
         this.listOfFiles = listOfFiles;
         this.start = start;
         this.end = end;
@@ -41,7 +41,7 @@ public class ParallelSqlInjector extends RecursiveTask<Void>{
         java.util.Arrays.sort(listOfFiles);
 
         // Create a ForkJoinTask for the main computation
-        ParallelSqlInjector task = new ParallelSqlInjector(PCAP_FOLDER_PATH, listOfFiles, 0, listOfFiles.length);
+        ParallelSqlIngestion task = new ParallelSqlIngestion(PCAP_FOLDER_PATH, listOfFiles, 0, listOfFiles.length);
 
         // Execute the task and get the result
         forkJoinPool.invoke(task);
@@ -60,8 +60,8 @@ public class ParallelSqlInjector extends RecursiveTask<Void>{
         if(end - start > 1) { // split and combine
             
             int mid = (start + end) / 2;
-            ParallelSqlInjector leftTask = new ParallelSqlInjector(PCAP_FOLDER_PATH, listOfFiles, start, mid);
-            ParallelSqlInjector rightTask = new ParallelSqlInjector(PCAP_FOLDER_PATH, listOfFiles, mid, end);            
+            ParallelSqlIngestion leftTask = new ParallelSqlIngestion(PCAP_FOLDER_PATH, listOfFiles, start, mid);
+            ParallelSqlIngestion rightTask = new ParallelSqlIngestion(PCAP_FOLDER_PATH, listOfFiles, mid, end);            
             leftTask.fork();
             rightTask.fork();
             leftTask.join();

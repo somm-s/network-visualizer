@@ -18,6 +18,7 @@ import java.util.List;
 import java.util.TimeZone;
 
 import org.pcap4j.packet.IpPacket;
+import org.pcap4j.packet.IpV6Packet;
 import org.pcap4j.packet.Packet;
 import org.pcap4j.packet.TcpPacket;
 import org.pcap4j.packet.UdpPacket;

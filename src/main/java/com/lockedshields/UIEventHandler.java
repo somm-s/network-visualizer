@@ -1,6 +1,5 @@
 package com.lockedshields;
 
-import javafx.event.ActionEvent;
 import javafx.event.Event;
 import javafx.event.EventHandler;
 import javafx.scene.input.MouseEvent;
@@ -13,8 +12,6 @@ public class UIEventHandler implements EventHandler<Event>{
 
     double startXDrag = 0;
     long startTimeOnDrag = 0;
-
-    private boolean isCanvasActive = false;
 
     public UIEventHandler(DataBuffer dataBuffer, TimelineCanvas canvas) {
         this.dataBuffer = dataBuffer;
@@ -40,19 +37,6 @@ public class UIEventHandler implements EventHandler<Event>{
             // adjust start time
             long startTime = (long) (startTimeOnDrag - delta * dataBuffer.timeInterval / canvas.getWidth());
             dataBuffer.setStartTime(startTime);
-
-        } else if (event.getEventType() == MouseEvent.MOUSE_ENTERED) {
-            // check if mouse entered canvas
-            if (event.getTarget() == canvas) {
-                isCanvasActive = true;
-            }
-
-        } else if (event.getEventType() == MouseEvent.MOUSE_EXITED) {
-            // check if mouse exited canvas
-            if (event.getTarget() == canvas) {
-                isCanvasActive = false;
-            }
-            
         }
     }
 

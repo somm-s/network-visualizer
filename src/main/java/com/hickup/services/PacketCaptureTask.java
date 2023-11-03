@@ -62,16 +62,14 @@ public class PacketCaptureTask extends Task<Void> {
                     e.printStackTrace();
                 }
                 if (packet != null) {
-
                     // if not IP packet, ignore
                     if (!packet.contains(IpV4Packet.class)) continue;
                     
                     // extract src and dest IP addresses
                     String src_addr = packet.get(IpV4Packet.class).getHeader().getSrcAddr().getHostAddress();
                     String dest_addr  = packet.get(IpV4Packet.class).getHeader().getDstAddr().getHostAddress();
-
                     // if receiverIP not in src or dest, ignore. Set isSent according to whether src or dest is receiverIP
-                    if (!src_addr.equals(receiverIP) || !dest_addr.equals(receiverIP)) {
+                    if (!src_addr.equals(receiverIP) && !dest_addr.equals(receiverIP)) {
                         continue;
                     }
 
