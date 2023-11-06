@@ -43,7 +43,9 @@ public abstract class IPPoint implements Comparable<IPPoint>{
     public String srcIp;
     public String dstIp;
     public double val;
-    
+    double x;
+    double y;
+
     public IPPoint(int packetSize, java.sql.Timestamp time, String srcIp, String dstIp) {
         this.packetSize = packetSize;
         this.time = time;
@@ -54,8 +56,24 @@ public abstract class IPPoint implements Comparable<IPPoint>{
         }
     }
 
+    public double getX() {
+        return x;
+    }
+
+    public double getY() {
+        return y;
+    }
+
+    public double setX(double x) {
+        return this.x = x;
+    }
+
+    public double setY(double y) {
+        return this.y = y;
+    }
+
     public static void connect() {
-        String createTableSQL = "CREATE TABLE IF NOT EXISTS packets ("
+        String createTableSQL = "CREATE TABLE IF NOT EXISTS packets6 ("
             + "id SERIAL PRIMARY KEY,"
             + "timestamp TIMESTAMP,"
             + "protocol INT,"

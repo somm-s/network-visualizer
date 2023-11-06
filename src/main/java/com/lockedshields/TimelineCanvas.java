@@ -91,6 +91,8 @@ public class TimelineCanvas extends Canvas implements DataChangeListener {
                 y = getHeight() / 2 - (4 + (getHeight() / 2) * d.val / maxVal);
             }
             d.draw(g, x, y, 8, 8);
+            d.setX(x);
+            d.setY(y);
             last = d;
         }
 

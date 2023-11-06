@@ -128,7 +128,7 @@
                     <createDependencyReducedPom>false</createDependencyReducedPom>
                     <transformers>
                         <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                            <mainClass>com.lockedshields.IPWriter</mainClass>
+                            <mainClass>com.lockedshields.GUIStarter</mainClass>
                         </transformer>
                     </transformers>
                   </configuration>

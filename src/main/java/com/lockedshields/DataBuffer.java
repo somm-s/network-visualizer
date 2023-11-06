@@ -236,4 +236,24 @@ public class DataBuffer implements Iterable<IPPoint> {
     public interface DataChangeListener {
         void onDataChanged();
     }
+
+    public IPPoint getHoveredPoint(double mouseX, double mouseY) {
+        Iterator<IPPoint> it = this.iterator();
+
+        while (it.hasNext()) {
+            IPPoint point = it.next();
+            // Implement logic to check if the mouse coordinates are within the bounds of the point
+            if (pointIsHovered(point, mouseX, mouseY)) {
+                return point;
+            }
+        }
+
+        return null;
+    }
+
+    private boolean pointIsHovered(IPPoint point, double mouseX, double mouseY) {
+        // Implement logic to check if the mouse coordinates are within the bounds of the point
+        // You might use the x and y coordinates of the point and some radius to define the bounds
+        return (Math.abs(mouseX - point.getX()) < 4) && (Math.abs(mouseY - point.getY()) < 4);
+    }
 }
