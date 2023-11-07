@@ -61,9 +61,9 @@ public class UDPPoint extends IPPoint {
 
         try (PreparedStatement preparedStatement = connection.prepareStatement(insertDataSQL)) {
             // Set values for parameters
-            preparedStatement.setTimestamp(1, this.time);
-            preparedStatement.setInt(2, this.UDP_PROTOCOL);
-            preparedStatement.setInt(3, this.packetSize);
+            preparedStatement.setInt(1, this.UDP_PROTOCOL);
+            preparedStatement.setInt(2, this.packetSize);
+            preparedStatement.setTimestamp(3, this.time);
             preparedStatement.setString(4, this.srcIp);
             preparedStatement.setString(5, this.dstIp);         
             preparedStatement.setInt(6, this.srcPort);
@@ -77,9 +77,9 @@ public class UDPPoint extends IPPoint {
 
     @Override
     public void insertPointToSqlBatch(PreparedStatement preparedStatement) throws SQLException {
-        preparedStatement.setTimestamp(1, this.time);
-        preparedStatement.setInt(2, this.UDP_PROTOCOL);
-        preparedStatement.setInt(3, this.packetSize);
+        preparedStatement.setInt(1, this.UDP_PROTOCOL);
+        preparedStatement.setInt(2, this.packetSize);
+        preparedStatement.setTimestamp(3, this.time);
         preparedStatement.setString(4, this.srcIp);
         preparedStatement.setString(5, this.dstIp);         
         preparedStatement.setInt(6, this.srcPort);

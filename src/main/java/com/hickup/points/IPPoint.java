@@ -73,11 +73,10 @@ public abstract class IPPoint implements Comparable<IPPoint>{
     }
 
     public static void connect() {
-        String createTableSQL = "CREATE TABLE IF NOT EXISTS packets6 ("
-            + "id SERIAL PRIMARY KEY,"
-            + "timestamp TIMESTAMP,"
+        String createTableSQL = "CREATE TABLE IF NOT EXISTS packets ("
             + "protocol INT,"
             + "size INT,"
+            + "timestamp TIMESTAMP,"
             + "src_ip VARCHAR(255),"
             + "dst_ip VARCHAR(255),"
             + "src_port INT,"
@@ -337,7 +336,7 @@ public abstract class IPPoint implements Comparable<IPPoint>{
         // List that is returned
         IPPoint res = null;
 
-        String insertDataSQL = "INSERT INTO packets (timestamp, protocol, size, src_ip, dst_ip, src_port, dst_port, FIN, SYN, RST, PSH, ACK, URG)"
+        String insertDataSQL = "INSERT INTO packets (protocol, size, timestamp, src_ip, dst_ip, src_port, dst_port, FIN, SYN, RST, PSH, ACK, URG)"
         + " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
 

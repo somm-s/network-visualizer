@@ -48,9 +48,9 @@ public class AnyPoint extends IPPoint {
         + " VALUES (?, ?, ?, ?, ?)";
         try (PreparedStatement preparedStatement = connection.prepareStatement(insertDataSQL)) {
             // Set values for parameters
-            preparedStatement.setTimestamp(1, this.time);
-            preparedStatement.setInt(2, this.ANY_PROTOCOL);
-            preparedStatement.setInt(3, this.packetSize);
+            preparedStatement.setInt(1, this.ANY_PROTOCOL);
+            preparedStatement.setInt(2, this.packetSize);
+            preparedStatement.setTimestamp(3, this.time);
             preparedStatement.setString(4, this.srcIp);
             preparedStatement.setString(5, this.dstIp);
             // Execute the SQL statement to insert data
@@ -60,9 +60,9 @@ public class AnyPoint extends IPPoint {
 
     @Override
     public void insertPointToSqlBatch(PreparedStatement preparedStatement) throws SQLException {
-        preparedStatement.setTimestamp(1, this.time);
-        preparedStatement.setInt(2, this.ANY_PROTOCOL);
-        preparedStatement.setInt(3, this.packetSize);
+        preparedStatement.setInt(1, this.ANY_PROTOCOL);
+        preparedStatement.setInt(2, this.packetSize);
+        preparedStatement.setTimestamp(3, this.time);
         preparedStatement.setString(4, this.srcIp);
         preparedStatement.setString(5, this.dstIp);         
         preparedStatement.setNull(6, java.sql.Types.INTEGER);
@@ -77,8 +77,8 @@ public class AnyPoint extends IPPoint {
     }
 
     public static AnyPoint fromResultSet(ResultSet resultSet) throws SQLException {
-        Timestamp time = resultSet.getTimestamp("timestamp");
         int packetSize = resultSet.getInt("size");
+        Timestamp time = resultSet.getTimestamp("timestamp");
         String srcIp = resultSet.getString("src_ip");
         String dstIp = resultSet.getString("dst_ip");
         return new AnyPoint(packetSize, time, srcIp, dstIp);
