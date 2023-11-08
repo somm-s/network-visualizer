@@ -30,6 +30,8 @@ public abstract class IPPoint implements Comparable<IPPoint>{
     static String url = "jdbc:postgresql://localhost:5432/ls22";
     static String user = "lab";
     static String password = "lab";
+    // static string tableName = "packets";
+    static String tableName = "capture";
     public static DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSSSSS").withZone(TimeZone.getTimeZone("UTC").toZoneId());
     public static Connection connection;
 
@@ -73,10 +75,10 @@ public abstract class IPPoint implements Comparable<IPPoint>{
     }
 
     public static void connect() {
-        String createTableSQL = "CREATE TABLE IF NOT EXISTS packets ("
+        String createTableSQL = "CREATE TABLE IF NOT EXISTS " + tableName + " ("
             + "protocol INT,"
             + "size INT,"
-            + "timestamp TIMESTAMP,"
+            + "timestamp TIMESTAMP,"    
             + "src_ip VARCHAR(255),"
             + "dst_ip VARCHAR(255),"
             + "src_port INT,"
@@ -105,7 +107,7 @@ public abstract class IPPoint implements Comparable<IPPoint>{
             connect();
         }
 
-        String query = "SELECT * FROM packets WHERE 1 = 1";
+        String query = "SELECT * FROM " + tableName + " WHERE 1 = 1";
         if(!observedHost.equals("")) {
             query += " AND (src_ip = '" + observedHost + "' OR dst_ip = '" + observedHost + "')";
         }

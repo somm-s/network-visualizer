@@ -127,6 +127,7 @@ public class MainApplication extends Application {
         Button stopButton = new Button("Stop & Save");
         stopButton.getStyleClass().add("button");
         stopButton.setOnAction(event -> {
+            System.out.println("Cancelling csv service");
             csvService.cancel();
         });
         startButton.setMaxWidth(Double.MAX_VALUE);

@@ -1,5 +1,7 @@
 package com.lockedshields;
 
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
 import java.util.Iterator;
 
 import com.hickup.points.IPPoint;
@@ -46,7 +48,7 @@ public class TimelineCanvas extends Canvas implements DataChangeListener {
             for(int i = 0; i < 5; i++) {
                 // have some slack at the sides
                 double slack = dataBuffer.timeInterval * 0.1;
-                String time = IPPoint.timeFormatter.format(IPPoint.microToInstant((long) (dataBuffer.startTime + slack + i * (dataBuffer.timeInterval - 2 * slack) / 4)));
+                String time = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSSSSS").format(IPPoint.microToInstant((long) (dataBuffer.startTime + slack + i * (dataBuffer.timeInterval - 2 * slack) / 4)).atZone(ZoneOffset.UTC));
                 // draw a tick mark on top of the time interval bar
                 double widthSlack = 0.1 * getWidth();
                 g.strokeLine(widthSlack + i * ((getWidth() - 2 * widthSlack) / 4), getHeight() - 20, widthSlack + i * ((getWidth() - 2 * widthSlack) / 4), getHeight() - 25);

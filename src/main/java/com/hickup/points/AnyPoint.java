@@ -44,7 +44,7 @@ public class AnyPoint extends IPPoint {
 
     @Override
     public void insertPointToSql(Connection connection) throws SQLException {
-        String insertDataSQL = "INSERT INTO packets (timestamp, protocol, size, src_ip, dst_ip)"
+        String insertDataSQL = "INSERT INTO " + tableName + " (timestamp, protocol, size, src_ip, dst_ip)"
         + " VALUES (?, ?, ?, ?, ?)";
         try (PreparedStatement preparedStatement = connection.prepareStatement(insertDataSQL)) {
             // Set values for parameters

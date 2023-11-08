@@ -95,7 +95,7 @@ public class TCPPoint extends IPPoint {
 
     @Override
     public void insertPointToSql(Connection connection) throws SQLException {
-        String insertDataSQL = "INSERT INTO packets (timestamp, protocol, size, src_ip, dst_ip, src_port, dst_port, FIN, SYN, RST, PSH, ACK, URG)"
+        String insertDataSQL = "INSERT INTO " + tableName + " (timestamp, protocol, size, src_ip, dst_ip, src_port, dst_port, FIN, SYN, RST, PSH, ACK, URG)"
         + " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         try (PreparedStatement preparedStatement = connection.prepareStatement(insertDataSQL)) {
             // Set values for parameters
