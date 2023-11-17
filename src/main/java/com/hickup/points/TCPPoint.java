@@ -11,8 +11,8 @@ import javafx.scene.canvas.GraphicsContext;
 public class TCPPoint extends IPPoint {
 
     boolean[] flags = new boolean[6]; // FIN, SYN, RST, PSH, ACK, URG
-    int srcPort;
-    int dstPort;
+    public int srcPort;
+    public int dstPort;
 
     public TCPPoint(int packetSize, Timestamp time, String srcIp, String dstIp) {
         super(packetSize, time, srcIp, dstIp);
@@ -99,7 +99,7 @@ public class TCPPoint extends IPPoint {
         + " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         try (PreparedStatement preparedStatement = connection.prepareStatement(insertDataSQL)) {
             // Set values for parameters
-            preparedStatement.setInt(1, this.TCP_PROTOCOL);
+            preparedStatement.setInt(1, IPPoint.TCP_PROTOCOL);
             preparedStatement.setInt(2, this.packetSize);
             preparedStatement.setTimestamp(3, this.time);
             preparedStatement.setString(4, this.srcIp);
@@ -120,7 +120,7 @@ public class TCPPoint extends IPPoint {
 
     @Override
     public void insertPointToSqlBatch(PreparedStatement preparedStatement) throws SQLException {
-        preparedStatement.setInt(1, this.TCP_PROTOCOL);
+        preparedStatement.setInt(1, IPPoint.TCP_PROTOCOL);
         preparedStatement.setInt(2, this.packetSize);
         preparedStatement.setTimestamp(3, this.time);
         preparedStatement.setString(4, this.srcIp);
@@ -155,6 +155,35 @@ public class TCPPoint extends IPPoint {
         TCPPoint tcpPoint = new TCPPoint(packetSize, time, srcIp, dstIp, srcPort, dstPort);
         tcpPoint.setFlags(flags);
         return tcpPoint;
+    }
+
+    @Override
+    public String getConnectionIdentifier() {
+        // concatenate both ips, ports and protocol, start with the smaller one
+        String src = this.srcIp + "-" + this.srcPort;
+        String dst = this.dstIp + "-" + this.dstPort;
+        if (src.compareTo(dst) > 0) {
+            String tmp = src;
+            src = dst;
+            dst = tmp;
+        }
+
+        return src + "-" + dst + "-" + IPPoint.TCP_PROTOCOL;
+    }
+
+    @Override
+    public int getSrcPort() {
+        return this.srcPort;
+    }
+
+    @Override
+    public int getDstPort() {
+        return this.dstPort;
+    }
+
+    @Override
+    public int getProtocol() {
+        return IPPoint.TCP_PROTOCOL;
     }
 
 }

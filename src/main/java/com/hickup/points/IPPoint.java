@@ -12,13 +12,11 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.time.Instant;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.TimeZone;
 
 import org.pcap4j.packet.IpPacket;
-import org.pcap4j.packet.IpV6Packet;
 import org.pcap4j.packet.Packet;
 import org.pcap4j.packet.TcpPacket;
 import org.pcap4j.packet.UdpPacket;
@@ -35,8 +33,8 @@ public abstract class IPPoint implements Comparable<IPPoint>{
     public static DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSSSSS").withZone(TimeZone.getTimeZone("UTC").toZoneId());
     public static Connection connection;
 
-    public static final int UDP_PROTOCOL = 1;
     public static final int TCP_PROTOCOL = 0;
+    public static final int UDP_PROTOCOL = 1;
     public static final int ANY_PROTOCOL = 2;
 
 
@@ -227,6 +225,8 @@ public abstract class IPPoint implements Comparable<IPPoint>{
     // serializes to string with toString method of dynamic type
     public abstract String toString();
 
+    public abstract String getConnectionIdentifier();
+
     // deserializes from string
     public static IPPoint fromString(String s) {
         IPPoint res = null;
@@ -393,4 +393,10 @@ public abstract class IPPoint implements Comparable<IPPoint>{
     public int compareTo(IPPoint other) {
         return Long.compare(this.getMicroseconds(), other.getMicroseconds());
     }
+
+    public abstract int getSrcPort();
+
+    public abstract int getDstPort();
+
+    public abstract int getProtocol();
 }

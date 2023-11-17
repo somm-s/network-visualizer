@@ -10,8 +10,8 @@ import javafx.scene.canvas.GraphicsContext;
 
 public class UDPPoint extends IPPoint {
 
-    int srcPort;
-    int dstPort;
+    public int srcPort;
+    public int dstPort;
 
     public UDPPoint(int packetSize, Timestamp time, String srcIp, String dstIp) {
         super(packetSize, time, srcIp, dstIp);
@@ -61,7 +61,7 @@ public class UDPPoint extends IPPoint {
 
         try (PreparedStatement preparedStatement = connection.prepareStatement(insertDataSQL)) {
             // Set values for parameters
-            preparedStatement.setInt(1, this.UDP_PROTOCOL);
+            preparedStatement.setInt(1, IPPoint.UDP_PROTOCOL);
             preparedStatement.setInt(2, this.packetSize);
             preparedStatement.setTimestamp(3, this.time);
             preparedStatement.setString(4, this.srcIp);
@@ -77,7 +77,7 @@ public class UDPPoint extends IPPoint {
 
     @Override
     public void insertPointToSqlBatch(PreparedStatement preparedStatement) throws SQLException {
-        preparedStatement.setInt(1, this.UDP_PROTOCOL);
+        preparedStatement.setInt(1, IPPoint.UDP_PROTOCOL);
         preparedStatement.setInt(2, this.packetSize);
         preparedStatement.setTimestamp(3, this.time);
         preparedStatement.setString(4, this.srcIp);
@@ -104,5 +104,34 @@ public class UDPPoint extends IPPoint {
         int dstPort = resultSet.getInt("dst_port");
         return new UDPPoint(packetSize, time, srcIp, dstIp, srcPort, dstPort);
 
+    }
+
+    @Override
+    public String getConnectionIdentifier() {
+        // concatenate both ips, ports and protocol, start with the smaller one
+        String src = this.srcIp + "-" + this.srcPort;
+        String dst = this.dstIp + "-" + this.dstPort;
+        if (src.compareTo(dst) > 0) {
+            String tmp = src;
+            src = dst;
+            dst = tmp;
+        }
+
+        return src + "-" + dst + "-" + IPPoint.UDP_PROTOCOL;
+    }
+
+    @Override
+    public int getSrcPort() {
+        return this.srcPort;
+    }
+
+    @Override
+    public int getDstPort() {
+        return this.dstPort;
+    }
+
+    @Override
+    public int getProtocol() {
+        return IPPoint.UDP_PROTOCOL;
     }
 }

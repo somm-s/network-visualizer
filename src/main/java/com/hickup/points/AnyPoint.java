@@ -48,7 +48,7 @@ public class AnyPoint extends IPPoint {
         + " VALUES (?, ?, ?, ?, ?)";
         try (PreparedStatement preparedStatement = connection.prepareStatement(insertDataSQL)) {
             // Set values for parameters
-            preparedStatement.setInt(1, this.ANY_PROTOCOL);
+            preparedStatement.setInt(1, IPPoint.ANY_PROTOCOL);
             preparedStatement.setInt(2, this.packetSize);
             preparedStatement.setTimestamp(3, this.time);
             preparedStatement.setString(4, this.srcIp);
@@ -60,7 +60,7 @@ public class AnyPoint extends IPPoint {
 
     @Override
     public void insertPointToSqlBatch(PreparedStatement preparedStatement) throws SQLException {
-        preparedStatement.setInt(1, this.ANY_PROTOCOL);
+        preparedStatement.setInt(1, IPPoint.ANY_PROTOCOL);
         preparedStatement.setInt(2, this.packetSize);
         preparedStatement.setTimestamp(3, this.time);
         preparedStatement.setString(4, this.srcIp);
@@ -82,5 +82,33 @@ public class AnyPoint extends IPPoint {
         String srcIp = resultSet.getString("src_ip");
         String dstIp = resultSet.getString("dst_ip");
         return new AnyPoint(packetSize, time, srcIp, dstIp);
+    }
+
+    @Override
+    public String getConnectionIdentifier() {
+        // concatenate both ips, start with smaller one.
+        String src = this.srcIp;
+        String dst = this.dstIp;
+        if (src.compareTo(dst) > 0) {
+            String tmp = src;
+            src = dst;
+            dst = tmp;
+        }
+        return src + "-" + dst;
+    }
+
+    @Override
+    public int getSrcPort() {
+        return 0;
+    }
+
+    @Override
+    public int getDstPort() {
+        return 0;
+    }
+
+    @Override
+    public int getProtocol() {
+        return IPPoint.ANY_PROTOCOL;
     }
 }

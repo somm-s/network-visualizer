@@ -1,16 +1,9 @@
 package com.hickup.services;
 
 import org.pcap4j.core.PcapHandle;
-import org.pcap4j.packet.IpV4Packet;
 import org.pcap4j.packet.Packet;
-import org.pcap4j.packet.TcpPacket;
-import org.pcap4j.packet.UdpPacket;
-
 import com.hickup.points.IPPoint;
-import com.opencsv.CSVWriter;
-
 import javafx.application.Platform;
-
 import java.io.FileWriter;
 import java.io.IOException;
 
