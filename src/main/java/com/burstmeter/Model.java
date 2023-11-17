@@ -9,7 +9,7 @@ public class Model {
     public static Model instance;
     public static int sizeThreshold = 50; // in bytes
     public static long burstTimeout = 1000; // in microseconds
-    public static long interactionTimeout = 1000000; // in microseconds, 1 second
+    public static long interactionTimeout = 2000000; // in microseconds, 1 second
 
 
     HashMap<String, Burst> connections;

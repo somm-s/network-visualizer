@@ -40,12 +40,12 @@ public class NetworkDataCapture extends Task<Void> {
                 if (point != null) {
                     
                     // add point to model
-                    Platform.runLater(new Runnable() {
-                        @Override
-                        public void run() {
+                    // Platform.runLater(new Runnable() {
+                    //     @Override
+                    //     public void run() {
                             Model.getInstance().addPoint(point);
-                        }
-                    });
+                    //     }
+                    // });
                 }
             }
         };

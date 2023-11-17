@@ -3,7 +3,6 @@ package com.burstmeter;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.application.Platform;
-import javafx.stage.Stage;
 import javafx.util.Duration;
 
 public class Controller {
@@ -21,10 +20,8 @@ public class Controller {
     public void startPeriodicUpdate() {
         // Set up a Timeline for periodic updates
         Timeline timeline = new Timeline(
-            new KeyFrame(Duration.millis(6), event -> {
-                Platform.runLater(() -> {
-                    view.updateCanvas();
-                });
+            new KeyFrame(Duration.millis(14), event -> {
+                view.updateCanvas();
             })
         );
         timeline.setCycleCount(Timeline.INDEFINITE);

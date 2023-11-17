@@ -10,6 +10,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.format.DateTimeFormatter;
 import java.util.LinkedList;
@@ -29,7 +30,7 @@ public abstract class IPPoint implements Comparable<IPPoint>{
     static String user = "lab";
     static String password = "lab";
     // static string tableName = "packets";
-    static String tableName = "capture";
+    public static String tableName = "live_packets";
     public static DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSSSSS").withZone(TimeZone.getTimeZone("UTC").toZoneId());
     public static Connection connection;
 
@@ -99,7 +100,19 @@ public abstract class IPPoint implements Comparable<IPPoint>{
         }
     }
 
-    public static IPPoint[] getPointsFromSQL(String startTime, String endTime, String observedHost, String dstHost) {
+    public static IPPoint[] getPointsFromSQL(long startTime, long endTime, String observedHost, String dstHost, int limit) {
+        
+        // transform microseconds to timestamp
+        Instant startInstant = microToInstant(startTime);
+        Instant endInstant = microToInstant(endTime);
+
+        Timestamp startTimestamp = Timestamp.from(startInstant);
+        Timestamp endTimestamp = Timestamp.from(endInstant);
+
+        return getPointsFromSQL(startTimestamp.toString(), endTimestamp.toString(), observedHost, dstHost, limit);
+    }
+
+    public static IPPoint[] getPointsFromSQL(String startTime, String endTime, String observedHost, String dstHost, int limit) {
         // if connection to sql is not established, connect
         if(connection == null) {
             connect();
@@ -115,8 +128,13 @@ public abstract class IPPoint implements Comparable<IPPoint>{
         if(!startTime.equals("") && !endTime.equals("")) {
             query += " AND timestamp BETWEEN '" + startTime + "' AND '" + endTime + "'";
         }
+        
+        if (limit > 0) {
+            query += " LIMIT " + limit;
+        }
+        
         query += ";";
-        System.out.println(query);
+
         IPPoint[] res = null;
 
         try {

@@ -28,7 +28,7 @@ public class BackgroundLoaderTask extends Task<Void> {
         System.out.println("Loading data from database");
         // sql query retreiving all packets from table 'packets'
 
-        IPPoint[] data = IPPoint.getPointsFromSQL(startTime, endTime, observer, dstHost);
+        IPPoint[] data = IPPoint.getPointsFromSQL(startTime, endTime, observer, dstHost, 0);
         System.out.println("Data loaded from database");
         dataBuffer.setData(data, observer);
 

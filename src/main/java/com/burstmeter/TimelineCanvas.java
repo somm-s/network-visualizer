@@ -1,4 +1,5 @@
 package com.burstmeter;
+import java.util.Collection;
 import java.util.HashMap;
 import com.hickup.points.IPPoint;
 import javafx.scene.canvas.Canvas;
@@ -27,7 +28,6 @@ public class TimelineCanvas extends Canvas {
     }
 
     private void drawData(GraphicsContext g) {
-        int count = 0;
 
         // get data
         HashMap<String, Burst> connections = Model.getInstance().connections;
@@ -58,8 +58,6 @@ public class TimelineCanvas extends Canvas {
                     break;
                 }
 
-                count++;
-
                 // draw burst
                 drawBurst(g, b);
 
@@ -69,6 +67,37 @@ public class TimelineCanvas extends Canvas {
             }
         }
         // System.out.println(count + " bursts");
+    }
+
+    private void drawPoint(GraphicsContext g, IPPoint p, long current) {
+        double xFraction2 = (current - IPPoint.getMicroseconds(p.time)) / (double) timeInterval;
+        double x2 = getWidth() * (1 - xFraction2);
+        double y2;
+        Color c;
+        if(p.srcIp.equals(observedHost)) {
+            y2 = getHeight() / 2 + getHeight() * Math.log(p.packetSize) / maxVal / 2;
+            c = Color.hsb(Math.abs(p.dstIp.hashCode()) % 360, 1, 1);
+
+        } else {
+            y2 = getHeight() / 2 - getHeight() * Math.log(p.packetSize) / maxVal / 2;
+            c = Color.hsb(Math.abs(p.srcIp.hashCode()) % 360, 1, 1);
+
+        }
+        g.setFill(c);
+        g.fillOval(x2 - 2, y2 - 2, 4, 4);
+
+    }
+
+    private void drawIPPoints(GraphicsContext g, Collection<IPPoint> points) {
+        for(IPPoint p : points) {
+            drawPoint(g, p, System.currentTimeMillis() * 1000);
+        }
+    }
+
+    private void drawIPPoints(GraphicsContext g, IPPoint[] points) {
+        for(IPPoint p : points) {
+            drawPoint(g, p, System.currentTimeMillis() * 1000);
+        }
     }
 
     private void drawBurst(GraphicsContext g, Burst b) {
@@ -102,17 +131,7 @@ public class TimelineCanvas extends Canvas {
 
         // if the burst is still being filled, draw every point of it instead of just the average
         if(IPPoint.getMicroseconds(b.getEndTime()) > current - 3000000) {
-            for(IPPoint p : b.getIpPoints()) {
-                double xFraction2 = (current - IPPoint.getMicroseconds(p.time)) / (double) timeInterval;
-                double x2 = getWidth() * (1 - xFraction2);
-                double y2;
-                if(b.getSrcHost().equals(observedHost)) {
-                    y2 = getHeight() / 2 + getHeight() * Math.log(p.packetSize) / maxVal / 2;
-                } else {
-                    y2 = getHeight() / 2 - getHeight() * Math.log(p.packetSize) / maxVal / 2;
-                }
-                g.fillOval(x2 - 2, y2 - 2, 4, 4);
-            }
+            drawIPPoints(g, b.getIpPoints());
         } else {
             // draw a circle if tcp
             if(b.getProtocol() == IPPoint.TCP_PROTOCOL) {
@@ -121,22 +140,33 @@ public class TimelineCanvas extends Canvas {
                 g.fillRect(x - 5, y - 5, 10, 10);
             }
     
-            // // if last burst not null, draw a line to it if time difference is less than Model.burstTimeout
-            // if(b.prev != null && (b.prev.getX() != 0 && b.prev.getY() != 0)) {
-            //     g.setStroke(c);
-            //     // System.out.println(lastX + " " + lastY + " " + x + " " + y);
-            //     g.strokeLine(b.prev.getX(), b.prev.getY(), x, y);
-            // }
-            // b.setX(x);
-            // b.setY(y);
+            // if last burst not null, draw a line to it if time difference is less than Model.burstTimeout
+            if(b.prev != null && (b.prev.getX() != 0 && b.prev.getY() != 0)) {
+                g.setStroke(c);
+                // System.out.println(lastX + " " + lastY + " " + x + " " + y);
+                g.strokeLine(b.prev.getX(), b.prev.getY(), x, y);
+            }
+            b.setX(x);
+            b.setY(y);
         }
+    }
 
-
+    private void drawFromSql(GraphicsContext g) {
+        long current = System.currentTimeMillis() * 1000; // in microseconds
+        IPPoint[] points = IPPoint.getPointsFromSQL(current - timeInterval, current, observedHost, "", 0);
+        drawIPPoints(g, points);
     }
 
     public void draw() {
+        // measure time of draw function
+        long startTime = System.currentTimeMillis();
+
+
         GraphicsContext gc = getGraphicsContext2D();
         drawBackground(gc);
-        drawData(gc);
+        // drawData(gc);
+        drawFromSql(gc);
+        
+        System.out.println("draw time: " + (System.currentTimeMillis() - startTime));
     }
 }

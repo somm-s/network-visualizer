@@ -56,7 +56,7 @@ public class UDPPoint extends IPPoint {
 
     @Override
     public void insertPointToSql(Connection connection) throws SQLException {
-        String insertDataSQL = "INSERT INTO " + tableName + " (timestamp, protocol, size, src_ip, dst_ip, src_port, dst_port)"
+        String insertDataSQL = "INSERT INTO " + tableName + " (protocol, size, timestamp, src_ip, dst_ip, src_port, dst_port)"
         + " VALUES (?, ?, ?, ?, ?, ?, ?)";
 
         try (PreparedStatement preparedStatement = connection.prepareStatement(insertDataSQL)) {
