@@ -159,14 +159,14 @@ public class TimelineCanvas extends Canvas {
 
     public void draw() {
         // measure time of draw function
-        long startTime = System.currentTimeMillis();
+        // long startTime = System.currentTimeMillis();
 
 
         GraphicsContext gc = getGraphicsContext2D();
         drawBackground(gc);
-        // drawData(gc);
-        drawFromSql(gc);
+        drawData(gc);
+        // drawFromSql(gc);
         
-        System.out.println("draw time: " + (System.currentTimeMillis() - startTime));
+        // System.out.println("draw time: " + (System.currentTimeMillis() - startTime));
     }
 }

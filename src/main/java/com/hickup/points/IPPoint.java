@@ -30,7 +30,7 @@ public abstract class IPPoint implements Comparable<IPPoint>{
     static String user = "lab";
     static String password = "lab";
     // static string tableName = "packets";
-    public static String tableName = "live_packets";
+    public static String tableName = "capture";
     public static DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSSSSS").withZone(TimeZone.getTimeZone("UTC").toZoneId());
     public static Connection connection;
 

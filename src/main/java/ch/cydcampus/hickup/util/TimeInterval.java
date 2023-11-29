@@ -1,0 +1,75 @@
+package ch.cydcampus.hickup.util;
+
+import java.sql.Timestamp;
+import java.time.Instant;
+
+/*
+ * Represents a microsecond precision time interval and provides methods for conversion.
+ */
+public class TimeInterval {
+ 
+    private long start;
+    private long end;
+
+    public TimeInterval(long start, long end) {
+        this.start = start;
+        this.end = end;
+    }
+
+    public TimeInterval(Timestamp start, Timestamp end) {
+        this.start = start.getTime() * 1000 + start.getNanos() / 1000;
+        this.end = end.getTime() * 1000 + end.getNanos() / 1000;
+    }
+
+    public long getStart() {
+        return start;
+    }
+
+    public long getEnd() {
+        return end;
+    }
+
+    public TimeInterval union(TimeInterval timeInterval) {
+        long newStart = Math.min(start, timeInterval.getStart());
+        long newEnd = Math.max(end, timeInterval.getEnd());
+
+        return new TimeInterval(newStart, newEnd);
+    }
+
+    /*
+     * Returns the time in the gap between this time interval and the other 
+     * time interval in microseconds. Return 0 if the time intervals overlap.
+     */
+    public long getDifference(TimeInterval other) {
+        long difference = 0;
+
+        if (other.getStart() > end) {
+            difference = other.getStart() - end;
+        } else if (other.getEnd() < start) {
+            difference = start - other.getEnd();
+        }
+
+        return difference;
+    }
+
+    public void setContentTo(TimeInterval timeInterval) {
+        this.start = timeInterval.getStart();
+        this.end = timeInterval.getEnd();
+    }
+
+    private Instant microToInstant(long micros) {
+        long millis = micros / 1000;
+        int nanos = (int) ((micros % 1000) * 1000);
+        return Instant.ofEpochMilli(millis).plusNanos(nanos);
+    }
+
+    public String toString() {
+        // transform microseconds to timestamp
+        Instant startInstant = microToInstant(start);
+        Instant endInstant = microToInstant(end);
+        Timestamp startTimestamp = Timestamp.from(startInstant);
+        Timestamp endTimestamp = Timestamp.from(endInstant);
+        return "[" + startTimestamp.toString() + ", " + endTimestamp.toString() + "]";
+    }
+
+}

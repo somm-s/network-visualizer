@@ -44,13 +44,15 @@ public class PacketCSVService extends Service<Void>{
         return capturedData;
     }
 
+    @Override
     protected Task<Void> createTask() {
         final String _filter = getFilter();
         final String _networkInterfaceName = getNetworkInterfaceName();
         final String _receiverIP = getReceiverIP();
         final String _fileName = getFileName();
 
-        return new PacketCSVTask(_fileName, _filter, _networkInterfaceName, _receiverIP);
+        // return new PacketCSVTask(_fileName, _filter, _networkInterfaceName, _receiverIP);
+        return new PacketStatisticTask(_fileName, _filter, _networkInterfaceName, _receiverIP);
     }
 
 }

@@ -2,6 +2,8 @@ package com.hickup.services;
 
 import org.pcap4j.core.PcapHandle;
 import org.pcap4j.packet.Packet;
+
+import com.hickup.Model;
 import com.hickup.points.IPPoint;
 import javafx.application.Platform;
 import java.io.FileWriter;
@@ -15,12 +17,13 @@ import java.io.IOException;
 // import org.pcap4j.core.PcapNetworkInterface;
 // import org.pcap4j.core.Pcaps;
 
-public class PacketCSVTask extends PacketTask {
+public class PacketStatisticTask extends PacketTask {
 
 
     FileWriter fileWriter;
+    Model model = Model.getInstance();
 
-    public PacketCSVTask(final String fileName, final String filter, final String networkInterfaceName, final String receiverIP) {
+    public PacketStatisticTask(final String fileName, final String filter, final String networkInterfaceName, final String receiverIP) {
         super(filter, networkInterfaceName, receiverIP);
         FileWriter fileWriter = null;
         try {
@@ -30,19 +33,17 @@ public class PacketCSVTask extends PacketTask {
             System.exit(1);
         }
         this.fileWriter = fileWriter;
-        // csvWriter.writeNext(new String[]{"Time", "Source IP", "Destination IP", "Source Port", "Destination Port", "Protocol", "Payload Length", "Fin", "Syn", "Rst", "Psh", "Ack", "Urg"});
     }
 
     public void onCancel(PcapHandle handle) {
+        
+        
         try {
+            model.writeStats(fileWriter);
             fileWriter.flush();
             fileWriter.close();
         } catch (IOException e) {
-            e.printStackTrace();
-
-            Platform.runLater(() -> {
-                System.out.println("Failed");
-            });
+            System.out.println("Flushing Failed");
         }
         handle.close();
     }
@@ -52,12 +53,6 @@ public class PacketCSVTask extends PacketTask {
 
         // use IPPoint to parse packet and write to the file
         IPPoint p = IPPoint.parsePacket(packet, handle.getTimestamp());
-
-        // write to file
-        try {
-            fileWriter.write(p.toString() + "\n");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        model.addPoint(p);
     }
 }
