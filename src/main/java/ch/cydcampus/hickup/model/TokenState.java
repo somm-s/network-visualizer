@@ -7,7 +7,17 @@ package ch.cydcampus.hickup.model;
 public class TokenState {
 
     public static enum Protocol {
-        TCP, UDP, ANY
+        TCP, UDP, ANY;
+        public static Protocol fromInt(int parseInt) {
+            switch (parseInt) {
+                case 0:
+                    return TCP;
+                case 1:
+                    return UDP;
+                default:
+                    return ANY;
+            }
+        }
     }
 
     private long bytes;
@@ -17,7 +27,21 @@ public class TokenState {
     private int srcPort;
     private int dstPort;
     private Protocol protocol;
-    
+
+
+    public TokenState() {
+        this.bytes = 0;
+        this.numSubTokens = 0;
+        this.srcIP = "";
+        this.dstIP = "";
+        this.srcPort = 0;
+        this.dstPort = 0;
+        this.protocol = Protocol.ANY;
+    }
+
+    /*
+     * Creates a new token state with values. Should only be invoked by packet tokens.
+     */
     public TokenState(long bytes, long numSubTokens, String srcIP, 
         String dstIP, int srcPort, int dstPort, Protocol protocol) {
         
@@ -34,28 +58,60 @@ public class TokenState {
         return bytes;
     }
 
+    public void setBytes(long bytes) {
+        this.bytes = bytes;
+    }
+
     public long getNumSubTokens() {
         return numSubTokens;
+    }
+
+    public void setNumSubTokens(long numSubTokens) {
+        this.numSubTokens = numSubTokens;
     }
 
     public String getSrcIP() {
         return srcIP;
     }
 
+    public void setSrcIP(String srcIP) {
+        this.srcIP = srcIP;
+    }
+
     public String getDstIP() {
         return dstIP;
+    }
+
+    public void setDstIP(String dstIP) {
+        this.dstIP = dstIP;
     }
 
     public int getSrcPort() {
         return srcPort;
     }
 
+    public void setSrcPort(int srcPort) {
+        this.srcPort = srcPort;
+    }
+
     public int getDstPort() {
         return dstPort;
     }
 
+    public void setDstPort(int dstPort) {
+        this.dstPort = dstPort;
+    }
+
     public Protocol getProtocol() {
         return protocol;
+    }
+
+    public void setProtocol(Protocol protocol) {
+        if(protocol == null) {
+            this.protocol = Protocol.ANY;
+        } else {
+            this.protocol = protocol;
+        }
     }
 
     /*
@@ -77,7 +133,7 @@ public class TokenState {
         }
     }
 
-    public void addSubTokenState(TokenState subTokenState) {
+    public void addBytesFromOther(TokenState subTokenState) {
         this.bytes += subTokenState.getBytes();
     }
 

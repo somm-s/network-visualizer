@@ -24,7 +24,17 @@ public class AbstractionModule extends Thread {
         try {
             while (running) {
                 Token token = dataSource.consume();
-                // TODO: filter out inappropriate packets, e.g. too small.
+                if(token == null) {
+                    System.out.println("Received End of Input Stream, exiting abstraction module.");
+                    running = false;
+                    break;
+                }
+
+                // TODO: filter out inappropriate packets, e.g. too small with separate filter class.
+                if(token.getState().getBytes() < 100) {
+                    continue;
+                }
+
                 dataModel.insertToken(token, combinationRule);
             }
         } catch (InterruptedException e) {

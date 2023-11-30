@@ -19,7 +19,7 @@ public class ParallelToken implements Token{
      */
     public ParallelToken() {
         this.subTokens = new HashMap<String, Token>();
-        this.state = null;
+        this.state = new TokenState(0, 0, "", "", 0, 0, TokenState.Protocol.ANY);
         this.timeInterval = null;
         this.level = 0;
         this.id = counter++;
@@ -69,19 +69,13 @@ public class ParallelToken implements Token{
 
     @Override
     public void addSubToken(Token packetToken) {
-        if(packetToken.getTimeInterval() == null) {
-            throw new IllegalArgumentException("Error: Trying to add empty token as a child.");
-        }
-
         if(timeInterval == null) {
             timeInterval = packetToken.getTimeInterval();
         } else {
             timeInterval = timeInterval.union(packetToken.getTimeInterval());
         }
 
-        if(state != null) { // state is null iff root token
-            state.addSubTokenState(packetToken.getState());
-        }
+        state.addBytesFromOther(packetToken.getState());
     }
 
     @Override
@@ -106,16 +100,18 @@ public class ParallelToken implements Token{
         Token newSubToken = null;
         if(this.level == ROOT_LAYER) {
             String hostToHostIdentifier = packetToken.getState().getHostToHostIdentifier();
-            newSubToken = tokenPool.allocateSequentialToken(packetToken.getState(), packetToken.getTimeInterval(), this.level + 1);
+            newSubToken = tokenPool.allocateSequentialToken(packetToken, this.level + 1);
             subTokens.put(hostToHostIdentifier, newSubToken);
         } else if(this.level == INTERACTION_LAYER) {
             // create bidirectional flow identifier
             String bidirectionalFlowIdentifier = packetToken.getState().getBidirectionalFlowIdentifier();
-            newSubToken = tokenPool.allocateSequentialToken(packetToken.getState(), packetToken.getTimeInterval(), this.level + 1);
+            newSubToken = tokenPool.allocateSequentialToken(packetToken, this.level + 1);
             subTokens.put(bidirectionalFlowIdentifier, newSubToken);
         } else {
             throw new IllegalStateException("Error: ParallelToken.createNewSubToken() called on level " + this.level + ".");
         }
+
+        this.getState().incrementSubTokenCount();
         return newSubToken;
     }
 
@@ -126,8 +122,12 @@ public class ParallelToken implements Token{
     @Override
     public String deepToString() {
         StringBuilder sb = new StringBuilder();
-        sb.append("PT: ");
-        sb.append(id);
+        sb.append(this.toString() + " ");
+        if(state == null) {
+            sb.append("ROOT");
+        } else {
+            sb.append(state.toString());
+        }
         sb.append("\n");
         for(Token subToken : subTokens.values()) {
             for(int i = 0; i < level; i++) {

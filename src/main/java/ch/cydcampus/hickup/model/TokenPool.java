@@ -35,39 +35,6 @@ public class TokenPool {
         return instance;
     }
 
-    /*
-     * Allocate a parallel token from the pool.
-     */
-    public ParallelToken allocateParallelToken(TokenState state, TimeInterval timeInterval, int level) {
-        ParallelToken token = parallelTokenQueue.poll();
-        if (token == null) {
-            token = new ParallelToken(state, timeInterval, level);
-        } else {
-            token.getState().setContentTo(state);
-            token.getTimeInterval().setContentTo(timeInterval);
-            token.setLevel(level);
-        }
-
-        return token;
-    }
-
-    /*
-     * Allocate a sequential token from the pool.
-     */    
-    public SequentialToken allocateSequentialToken(TokenState state, TimeInterval timeInterval, int level) {
-        SequentialToken token = sequentialTokenQueue.poll();
-        if (token == null) {
-            token = new SequentialToken(state, timeInterval, level);
-        } else {
-            token.getState().setContentTo(state);
-            token.getTimeInterval().setContentTo(timeInterval);
-            token.setLevel(level);
-        }
-
-
-        return token;
-    }
-
     public void releaseParallelToken(ParallelToken token) {
         parallelTokenQueue.offer(token);
     }
@@ -75,6 +42,52 @@ public class TokenPool {
     public void releaseSequentialToken(SequentialToken token) {
         sequentialTokenQueue.offer(token);
     }
+
+
+
+    /*
+     * Allocate a parallel token and populate it with the data from the network packet.
+     * The token is located as a non-leaf node in the token tree.
+     */
+    public ParallelToken allocateParallelToken(Token packetToken, int level) {
+        ParallelToken token = allocateParallelToken();
+        populateToken(
+            token, 
+            packetToken.getTimeInterval().getStart(), 
+            packetToken.getTimeInterval().getEnd(), 
+            level,
+            0, // empty token on creation. Will be updated later when the sub tokens are added.
+            packetToken.getState().getSrcIP(),
+            packetToken.getState().getDstIP(),
+            packetToken.getState().getSrcPort(),
+            packetToken.getState().getDstPort(),
+            packetToken.getState().getProtocol());
+        return token;
+    }
+
+
+    /*
+     * Allocate a sequential token and populate it with the data from the network packet.
+     * The token is located as a leaf node in the token tree.
+     */
+    public SequentialToken allocateSequentialToken(Token packetToken, int level) {
+        SequentialToken token = allocateSequentialToken();
+        populateToken(
+            token, 
+            packetToken.getTimeInterval().getStart(), 
+            packetToken.getTimeInterval().getEnd(), 
+            level,
+            0, // empty token on creation. Will be updated later when the sub tokens are added.
+            packetToken.getState().getSrcIP(),
+            packetToken.getState().getDstIP(),
+            packetToken.getState().getSrcPort(),
+            packetToken.getState().getDstPort(),
+            packetToken.getState().getProtocol());
+        return token;
+    }
+
+
+
 
     /*
      * Allocate a sequential token and populate it with the data from the network packet.
@@ -85,8 +98,6 @@ public class TokenPool {
         if(!packet.contains(IpPacket.class)) {
             return null;
         }
-
-        TimeInterval timeInterval = new TimeInterval(timestamp, timestamp);
 
         String srcAddr = packet.get(IpPacket.class).getHeader().getSrcAddr().getHostAddress();
         String dstAddr  = packet.get(IpPacket.class).getHeader().getDstAddr().getHostAddress();
@@ -110,8 +121,66 @@ public class TokenPool {
             dstPort = udpPacket.getHeader().getDstPort().valueAsInt();
         }
 
-        TokenState state = new TokenState(bytes, 0, srcAddr, dstAddr, srcPort, dstPort, Protocol.TCP);
-        SequentialToken token = allocateSequentialToken(state, timeInterval, Token.PACKET_LAYER);
+        SequentialToken token = allocateSequentialToken();
+        populateToken(token, TimeInterval.timeToMicro(timestamp), TimeInterval.timeToMicro(timestamp), Token.PACKET_LAYER, bytes, srcAddr, dstAddr, srcPort, dstPort, TokenState.Protocol.ANY);
         return token;
+    }
+
+    /*
+     * Allocate a sequential token and populate it with the row of a csv file.
+     */
+    public SequentialToken allocateFromString(String row) throws Exception {
+
+        String[] split = row.split(",");
+        Protocol protocol = Protocol.fromInt(Integer.parseInt(split[0]));
+        int bytes = Integer.parseInt(split[1]);
+        TimeInterval timeInterval = null;
+        timeInterval = new TimeInterval(split[2], split[2]);
+
+        String srcAddr = split[3];
+        String dstAddr = split[4];
+
+        int srcPort = 0;
+        int dstPort = 0;
+
+        if(split.length >= 7) {
+            srcPort = Integer.parseInt(split[5]);
+            dstPort = Integer.parseInt(split[6]);
+        }
+        SequentialToken token = allocateSequentialToken();
+        populateToken(token, timeInterval.getStart(), timeInterval.getEnd(), Token.PACKET_LAYER, bytes, srcAddr, dstAddr, srcPort, dstPort, protocol);
+        return token;
+    }
+
+    private SequentialToken allocateSequentialToken() {
+        SequentialToken token = sequentialTokenQueue.poll();
+        if (token == null) {
+            TokenState tokenState = new TokenState();
+            TimeInterval tokenTimeInterval = new TimeInterval();
+            token = new SequentialToken(tokenState, tokenTimeInterval, 0);
+        }
+        return token;
+    }
+
+    private ParallelToken allocateParallelToken() {
+        ParallelToken token = parallelTokenQueue.poll();
+        if (token == null) {
+            TokenState tokenState = new TokenState();
+            TimeInterval tokenTimeInterval = new TimeInterval();
+            token = new ParallelToken(tokenState, tokenTimeInterval, 0);
+        }
+        return token;
+    }
+
+    private void populateToken(Token token, long start, long end, int level, long bytes, String srcAddr, String dstAddr, int srcPort, int dstPort, Protocol protocol) {
+        token.setLevel(level);
+        token.getState().setBytes(bytes);
+        token.getState().setNumSubTokens(0);
+        token.getState().setSrcIP(srcAddr);
+        token.getState().setDstIP(dstAddr);
+        token.getState().setSrcPort(srcPort);
+        token.getState().setDstPort(dstPort);
+        token.getState().setProtocol(protocol);
+        token.getTimeInterval().updateTimeInterval(start, end);
     }
 }

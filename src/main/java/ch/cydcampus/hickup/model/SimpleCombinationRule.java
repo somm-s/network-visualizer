@@ -11,26 +11,25 @@ public class SimpleCombinationRule implements CombinationRule {
 
         TokenState decisionTokenState = decisionToken.getState();
         TokenState newTokenState = newToken.getState();
-        switch (decisionToken.getLevel()) {
-            case 1: // at root
-                return newTokenState.getHostToHostIdentifier()
-                    .equals(decisionTokenState.getHostToHostIdentifier());
-            case 2: // at host-to-host tokens
+        switch (decisionToken.getLevel()) { // we never check the root token
+            case 1: // at host-to-host tokens
                 return decisionToken.getTimeInterval()
                     .getDifference(newToken.getTimeInterval()) < INTERACTION_TIME_THRESHOLD;
-            case 3: // at interaction tokens
+            case 2: // at interaction tokens
                 return newTokenState.getBidirectionalFlowIdentifier()
                     .equals(decisionTokenState.getBidirectionalFlowIdentifier());
-            case 4: // at flow interaction tokens
+            case 3: // at flow interaction tokens
                 return true; // no combination rule.
-            case 5: // at object burst tokens
+            case 4: // at object burst tokens
                 return decisionToken.getTimeInterval()
-                    .getDifference(newToken.getTimeInterval()) < OBJECT_BURST_TIME_THRESHOLD;
-            case 6: // at burst tokens
+                    .getDifference(newToken.getTimeInterval()) < OBJECT_BURST_TIME_THRESHOLD &&
+                    decisionTokenState.getDstIP().equals(newTokenState.getDstIP());
+            case 5: // at burst tokens
                 return decisionToken.getTimeInterval()
-                    .getDifference(newToken.getTimeInterval()) < BURST_TIME_THRESHOLD;
-            default: // at packet tokens. Should not have any children.
-                throw new UnsupportedOperationException("Level " + decisionToken.getLevel() + " not available");
+                    .getDifference(newToken.getTimeInterval()) < BURST_TIME_THRESHOLD && 
+                    decisionTokenState.getDstIP().equals(newTokenState.getDstIP());
+            default: // at packet tokens. Should not have any children, so don't combine.
+                return false;
         }
 
     }

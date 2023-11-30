@@ -17,20 +17,21 @@ public class DataModel {
         Token current = root;
         Token child = null;
         do {
-            Token decidingChild = current.getDecidingChild(packetToken);
-            if(decidingChild == null) {
-            } else {
-            }
-
-            if(decidingChild != null && combinationRule.belongsToToken(decidingChild, packetToken)) {
-                child = decidingChild;
-            } else {
-                child = current.createNewSubToken(packetToken, tokenPool);
-            }
             current.addSubToken(packetToken);
-            current = child;
+            child = current.getDecidingChild(packetToken);
 
-        } while(child != null);
+            if(child == null) {
+            } else {
+            }
+
+            if(child == null || !combinationRule.belongsToToken(child, packetToken)) {
+                child = current.createNewSubToken(packetToken, tokenPool);
+            } else if(child.getLevel() == Token.PACKET_LAYER) {
+                child.addSubToken(packetToken);
+            }
+
+            current = child;
+        } while(child != null && child.getLevel() < Token.PACKET_LAYER);
     }
 
     public synchronized String toString() {

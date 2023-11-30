@@ -56,19 +56,13 @@ public class SequentialToken implements Token {
 
     @Override
     public void addSubToken(Token packetToken) {
-        if(packetToken.getTimeInterval() == null) {
-            throw new IllegalArgumentException("Error: Trying to add empty token as a child.");
-        }
-
         if(timeInterval == null) {
             timeInterval = packetToken.getTimeInterval();
         } else {
             timeInterval = timeInterval.union(packetToken.getTimeInterval());
         }
 
-        if(state != null) { // state is null iff root token
-            state.addSubTokenState(packetToken.getState());
-        }
+        state.addBytesFromOther(packetToken.getState());
     }
 
     @Override
@@ -83,27 +77,20 @@ public class SequentialToken implements Token {
     public Token createNewSubToken(Token packetToken, TokenPool tokenPool) {
         Token newSubToken = null;
         if(level == DISCUSSION_LAYER) {
-            newSubToken = tokenPool.allocateParallelToken(
-                packetToken.getState(), packetToken.getTimeInterval(), level + 1);
+            newSubToken = tokenPool.allocateParallelToken(packetToken, level + 1);
             subTokens.add(newSubToken);
         } else if(level == FLOW_INTERACTION_LAYER || 
             level == OBJECT_BURST_LAYER) {
-            newSubToken = tokenPool.allocateSequentialToken(
-                packetToken.getState(), packetToken.getTimeInterval(), level + 1);
+            newSubToken = tokenPool.allocateSequentialToken(packetToken, level + 1);
             subTokens.add(newSubToken);
         } else if(level == BURST_LAYER) {
             subTokens.add(packetToken);
-        } else if(level == PACKET_LAYER) {
-            // packets don't have children, return null.
         } else {
             throw new IllegalStateException(
                 "Error: SequentialToken.createNewSubToken() called on level " + level + ".");
         }
 
-        if(newSubToken != null) {
-            this.getState().incrementSubTokenCount();
-        }
-
+        this.getState().incrementSubTokenCount();
         return newSubToken;
     }
 
@@ -114,8 +101,7 @@ public class SequentialToken implements Token {
     @Override
     public String deepToString() {
         StringBuilder sb = new StringBuilder();
-        sb.append("ST: ");
-        sb.append(id);
+        sb.append(this.toString() + " " + state.toString());
         sb.append("\n");
         for(Token subToken : subTokens) {
             for(int i = 0; i < level; i++) {
