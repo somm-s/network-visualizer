@@ -7,6 +7,10 @@ public class DataModel {
     private Token root = new ParallelToken();
     private TokenPool tokenPool = TokenPool.getPool();
 
+    public Token getRoot() {
+        return root;
+    }
+
     /*
      * Inserts a token into the token tree.
      * 
@@ -19,19 +23,19 @@ public class DataModel {
         do {
             current.addSubToken(packetToken);
             child = current.getDecidingChild(packetToken);
-
-            if(child == null) {
-            } else {
-            }
-
             if(child == null || !combinationRule.belongsToToken(child, packetToken)) {
                 child = current.createNewSubToken(packetToken, tokenPool);
-            } else if(child.getLevel() == Token.PACKET_LAYER) {
-                child.addSubToken(packetToken);
             }
-
             current = child;
-        } while(child != null && child.getLevel() < Token.PACKET_LAYER);
+        } while(child != null && current.getLevel() < Token.BURST_LAYER);
+
+        // Invariant: current is a BURST_LAYER token. Packets are always added, regardless of the combination rule.
+        assert current.getLevel() == Token.BURST_LAYER;
+
+        // add packet to current BURST_LAYER token
+        current.addSubToken(packetToken);
+        current.createNewSubToken(packetToken, tokenPool);
+
     }
 
     public synchronized String toString() {

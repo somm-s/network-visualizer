@@ -2,13 +2,14 @@ package ch.cydcampus.hickup.model;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.concurrent.ConcurrentHashMap;
 
 import ch.cydcampus.hickup.util.TimeInterval;
 
 public class ParallelToken implements Token{
 
     private static int counter = 0;
-    private HashMap<String, Token> subTokens;
+    private ConcurrentHashMap<String, Token> subTokens;
     private TokenState state;
     private TimeInterval timeInterval;
     private int level;
@@ -18,7 +19,7 @@ public class ParallelToken implements Token{
      * Creates a new root token. Level defaults to 0.
      */
     public ParallelToken() {
-        this.subTokens = new HashMap<String, Token>();
+        this.subTokens = new ConcurrentHashMap<String, Token>();
         this.state = new TokenState(0, 0, "", "", 0, 0, TokenState.Protocol.ANY);
         this.timeInterval = null;
         this.level = 0;
@@ -37,7 +38,7 @@ public class ParallelToken implements Token{
     public ParallelToken(TokenState state, TimeInterval timeInterval, int level) {
         this.state = state;
         this.timeInterval = timeInterval;
-        this.subTokens = new HashMap<String, Token>();
+        this.subTokens = new ConcurrentHashMap<String, Token>();
         this.level = level;
         this.id = counter++;
     }
@@ -63,7 +64,7 @@ public class ParallelToken implements Token{
     }
 
     @Override
-    public Collection<Token> getSubTokens() {
+    public synchronized Collection<Token> getSubTokens() {
         return subTokens.values();
     }
 
@@ -96,7 +97,7 @@ public class ParallelToken implements Token{
     }
 
     @Override
-    public Token createNewSubToken(Token packetToken, TokenPool tokenPool) {
+    public synchronized Token createNewSubToken(Token packetToken, TokenPool tokenPool) {
         Token newSubToken = null;
         if(this.level == ROOT_LAYER) {
             String hostToHostIdentifier = packetToken.getState().getHostToHostIdentifier();

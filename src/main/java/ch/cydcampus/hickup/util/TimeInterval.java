@@ -76,6 +76,10 @@ public class TimeInterval {
         this.end = timeToMicro(end);
     }
 
+    public boolean doIntersect(TimeInterval other) {
+        return !(start > other.getEnd() || end < other.getStart());
+    }
+
     public TimeInterval union(TimeInterval timeInterval) {
         long newStart = Math.min(start, timeInterval.getStart());
         long newEnd = Math.max(end, timeInterval.getEnd());

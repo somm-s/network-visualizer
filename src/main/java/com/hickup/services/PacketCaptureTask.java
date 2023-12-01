@@ -6,6 +6,7 @@ import org.pcap4j.core.PcapHandle;
 import org.pcap4j.core.PcapNativeException;
 import org.pcap4j.core.PcapNetworkInterface;
 import org.pcap4j.core.Pcaps;
+import org.pcap4j.packet.IpPacket;
 import org.pcap4j.packet.IpV4Packet;
 import org.pcap4j.packet.Packet;
 import com.hickup.points.IPPoint;
@@ -66,12 +67,13 @@ public class PacketCaptureTask extends Task<Void> {
                     if (!packet.contains(IpV4Packet.class)) continue;
                     
                     // extract src and dest IP addresses
-                    String src_addr = packet.get(IpV4Packet.class).getHeader().getSrcAddr().getHostAddress();
-                    String dest_addr  = packet.get(IpV4Packet.class).getHeader().getDstAddr().getHostAddress();
+                    String src_addr = packet.get(IpPacket.class).getHeader().getSrcAddr().getHostAddress();
+                    String dest_addr  = packet.get(IpPacket.class).getHeader().getDstAddr().getHostAddress();
+                    
                     // if receiverIP not in src or dest, ignore. Set isSent according to whether src or dest is receiverIP
-                    if (!src_addr.equals(receiverIP) && !dest_addr.equals(receiverIP)) {
-                        continue;
-                    }
+                    // if (!src_addr.equals(receiverIP) && !dest_addr.equals(receiverIP)) {
+                    //     continue;
+                    // }
 
                     // final IPPoint point = createPointFromPacket(packet, handle.getTimestamp(), isSent, ip);
                     final IPPoint point = IPPoint.parsePacket(packet, handle.getTimestamp());

@@ -2,6 +2,9 @@ package ch.cydcampus.hickup.model;
 
 import java.util.Collection;
 import java.util.LinkedList;
+import java.util.concurrent.ConcurrentLinkedDeque;
+import java.util.concurrent.ConcurrentLinkedQueue;
+
 import ch.cydcampus.hickup.util.TimeInterval;
 
 /*
@@ -11,7 +14,7 @@ import ch.cydcampus.hickup.util.TimeInterval;
 public class SequentialToken implements Token {
     
     private static int counter = 0;
-    private LinkedList<Token> subTokens;
+    private ConcurrentLinkedDeque<Token> subTokens;
     private TokenState state;
     private TimeInterval timeInterval;
     private int level;
@@ -29,7 +32,7 @@ public class SequentialToken implements Token {
     public SequentialToken(TokenState state, TimeInterval timeInterval, int level) {
         this.state = state;
         this.timeInterval = timeInterval;
-        this.subTokens = new LinkedList<Token>();
+        this.subTokens = new ConcurrentLinkedDeque<Token>();
         this.level = level;
         this.id = counter++;
     }
@@ -42,7 +45,7 @@ public class SequentialToken implements Token {
         return timeInterval;
     }
 
-    public Collection<Token> getSubTokens() {
+    public synchronized Collection<Token> getSubTokens() {
         return subTokens;
     }
 
@@ -74,7 +77,7 @@ public class SequentialToken implements Token {
     }
 
     @Override
-    public Token createNewSubToken(Token packetToken, TokenPool tokenPool) {
+    public synchronized Token createNewSubToken(Token packetToken, TokenPool tokenPool) {
         Token newSubToken = null;
         if(level == DISCUSSION_LAYER) {
             newSubToken = tokenPool.allocateParallelToken(packetToken, level + 1);

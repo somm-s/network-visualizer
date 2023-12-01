@@ -13,13 +13,13 @@ public class SimpleCombinationRule implements CombinationRule {
         TokenState newTokenState = newToken.getState();
         switch (decisionToken.getLevel()) { // we never check the root token
             case 1: // at host-to-host tokens
+                return true;
+            case 2:
                 return decisionToken.getTimeInterval()
                     .getDifference(newToken.getTimeInterval()) < INTERACTION_TIME_THRESHOLD;
-            case 2: // at interaction tokens
+            case 3: // at interaction tokens
                 return newTokenState.getBidirectionalFlowIdentifier()
                     .equals(decisionTokenState.getBidirectionalFlowIdentifier());
-            case 3: // at flow interaction tokens
-                return true; // no combination rule.
             case 4: // at object burst tokens
                 return decisionToken.getTimeInterval()
                     .getDifference(newToken.getTimeInterval()) < OBJECT_BURST_TIME_THRESHOLD &&
@@ -28,8 +28,8 @@ public class SimpleCombinationRule implements CombinationRule {
                 return decisionToken.getTimeInterval()
                     .getDifference(newToken.getTimeInterval()) < BURST_TIME_THRESHOLD && 
                     decisionTokenState.getDstIP().equals(newTokenState.getDstIP());
-            default: // at packet tokens. Should not have any children, so don't combine.
-                return false;
+            default:
+                throw new RuntimeException("Unknown child token level: " + decisionToken.getLevel());
         }
 
     }
