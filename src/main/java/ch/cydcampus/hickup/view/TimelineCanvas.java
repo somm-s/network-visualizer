@@ -1,7 +1,11 @@
-package ch.cydcampus.hickup;
+package ch.cydcampus.hickup.view;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.Queue;
+
+import com.hickup.points.IPPoint;
 
 import ch.cydcampus.hickup.model.DataModel;
 import ch.cydcampus.hickup.model.Token;
@@ -12,30 +16,61 @@ import javafx.scene.paint.Color;
 
 public class TimelineCanvas extends Canvas {
 
+
+
     double maxVal = 24;
-    String filter = "";
-    boolean isPlaying = true;
-    long timeInterval = 100000000L; // 10 seconds
+    String filter;
+    String observedHostsPrefix = "";
+    String observedHost = "";
+    String hostToHostFilter = "";
+    boolean isPlaying = false;
+    boolean isInitialized = false;
+    long timeInterval = 100000000L; // 100 seconds
     long current = System.currentTimeMillis() * 1000; // set to current time in microseconds every time draw is called
     DataModel model;
-    boolean showPacketLayer = true; // 6
-    boolean showBurstLayer = true; // 5
-    boolean showObjectBurstLayer = true; // 4
-    boolean showFlowInteractionLayer = true; // 3
-    boolean showInteractionLayer = true; // 2
-    boolean showDiscussionLayer = true; // 1
+    boolean showPacketLayer = false;
+    boolean showBurstLayer = false;
+    boolean showObjectBurstLayer = false;
+    boolean showFlowInteractionLayer = false;
+    boolean showInteractionLayer = true;
+    boolean showDiscussionLayer = false;
     double startXDrag = 0;
     long startTimeOnDrag = 0;
+
+    String[] timeLegends = new String[] {"1μs", "10μs", "100μs", "1ms", "10ms", "100ms", "1s", "10s", "100s", "1000s", "10000s", "100000s", "1000000s"};
+    Long[] timeLegendsMicros = new Long[] {1L, 10L, 100L, 1000L, 10000L, 100000L, 1000000L, 10000000L, 100000000L, 1000000000L, 10000000000L, 100000000000L, 1000000000000L};
 
     public static enum Form {
         CIRCLE, SQUARE, TRIANGLE, DIAMOND, CROSS, PLUS, STAR
     }
 
-    String observedHost = "192.168.200.29";
-
     public TimelineCanvas(DataModel model) {
         super();
         this.model = model;
+    }
+
+    public void setObservedHostsPrefix(String prefix) {
+        this.observedHostsPrefix = prefix;
+    }
+
+    public void resetObservedHostsPrefix() {
+        this.observedHostsPrefix = "";
+    }
+
+    public void setHostToHostFilter(String hostToHostFilter) {
+        this.hostToHostFilter = hostToHostFilter;
+    }
+
+    public void resetHostToHostFilter() {
+        this.hostToHostFilter = "";
+    }
+
+    public void setObservedHost(String observedHost) {
+        this.observedHost = observedHost;
+    }
+
+    public void resetObservedHost() {
+        this.observedHost = "";
     }
 
     private void drawBackground(GraphicsContext g) {
@@ -45,7 +80,60 @@ public class TimelineCanvas extends Canvas {
 
         // draw x axis
         g.setStroke(Color.web("#000000"));
+        g.setLineWidth(2);
         g.strokeLine(0, getHeight()/2, getWidth(), getHeight()/2);        
+
+        // vertical line in the center
+        g.setStroke(Color.web("#000000"));
+        g.setLineWidth(0.5);
+        g.strokeLine(getWidth()/2, 0, getWidth()/2, getHeight());
+        g.setLineWidth(1);
+
+        // draw time ticks
+        if(isInitialized) {
+            Token root = model.getRoot();
+            TimeInterval dataTimeInterval = root.getTimeInterval();
+
+            // draw bar at the bottom indicating the time interval shown in the canvas
+            g.setStroke(Color.web("#CCCCCC"));
+            g.strokeLine(0, getHeight() - 20, getWidth(), getHeight() - 20);
+            // use dark gray
+            g.setFill(Color.web("#AAAAAA"));
+            // fill a rect corresponding to the current window.
+            g.fillRect(getWidth() * (current - timeInterval - dataTimeInterval.getStart()) / (dataTimeInterval.getEnd() - dataTimeInterval.getStart()), 
+                getHeight() - 20, getWidth() * timeInterval / (dataTimeInterval.getEnd() - dataTimeInterval.getStart()), 20);
+
+            // on top of bar, write at 5 positions the time corresponding to the position. Transform the time in nanoseconds to utf format
+            g.setFill(Color.web("#FFFFFF"));
+
+            String time = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSSSSS").format(
+                TimeInterval.microToInstant((2 * current - timeInterval) / 2).atZone(ZoneOffset.UTC));
+            // draw a tick mark on top of the time interval bar
+            g.strokeLine(getWidth() / 2, getHeight() - 20, getWidth() / 2, getHeight() - 25);         
+            // write the time
+            g.fillText(time, getWidth() / 2 - 90, getHeight() - 30);
+            
+            // draw time legend in bottom left
+            int legendIndex = (int) Math.log10(timeInterval) - 1;
+            if(legendIndex >= timeLegends.length) {
+                legendIndex = timeLegends.length - 1;
+            }
+            g.fillText(timeLegends[legendIndex], 10, getHeight() - 45);
+            g.strokeLine(10, getHeight() - 30, 10, getHeight() - 36);
+            double timeLegendWidth = getWidth() * timeLegendsMicros[legendIndex] / timeInterval;
+            g.strokeLine(10, getHeight() - 33, 10 + timeLegendWidth, getHeight() - 33);
+            g.strokeLine(10 + timeLegendWidth, getHeight() - 30, 10 + timeLegendWidth, getHeight() - 36);
+
+            // draw two ticks next to middle
+            g.setLineWidth(0.5);
+            double x = timeLegendWidth / 2;
+            while(x < getWidth() / 2) {
+                g.strokeLine(getWidth() / 2 - x, getHeight() / 2 - 3, getWidth() / 2 - x, getHeight() / 2 + 3);       
+                g.strokeLine(getWidth() / 2 + x, getHeight() / 2 - 3, getWidth() / 2 + x, getHeight() / 2 + 3);  
+                x += timeLegendWidth;      
+            }
+ 
+        }
     }
 
     private void drawInterval(GraphicsContext g, Token t, double lw) {
@@ -88,11 +176,7 @@ public class TimelineCanvas extends Canvas {
     } 
 
     private Color getHostColor(Token t) {
-        if(t.getState().getSrcIP().equals(observedHost)) {
-            return Color.hsb(Math.abs(t.getState().getDstIP().hashCode()) % 360, 1, 1);
-        } else {
-            return Color.hsb(Math.abs(t.getState().getSrcIP().hashCode()) % 360, 1, 1);
-        }
+        return Color.hsb(Math.abs(t.getState().getHostToHostIdentifier().hashCode()) % 360, 1, 1);
     }
 
     private double getX(long time) {
@@ -109,11 +193,13 @@ public class TimelineCanvas extends Canvas {
     private double getY(Token t) {
         long bytes = t.getState().getBytes();
         String srcIp = t.getState().getSrcIP();
-        if(srcIp.equals(observedHost)) {
+
+        if(observedHostsPrefix.length() > 0 && srcIp.startsWith(observedHostsPrefix)) {
             return getHeight() / 2 + getHeight() * Math.log(bytes) / maxVal / 2;
-        } else {
-            return getHeight() / 2 - getHeight() * Math.log(bytes) / maxVal / 2;
         }
+
+        // default also if no observed host group selected
+        return getHeight() / 2 - getHeight() * Math.log(bytes) / maxVal / 2;
     }
 
     private void drawToken(GraphicsContext g, Token t) {
@@ -121,9 +207,9 @@ public class TimelineCanvas extends Canvas {
         if(t.getLevel() == Token.PACKET_LAYER && showPacketLayer) {
             drawForm(g, Form.CIRCLE, t, 2);
         } else if(t.getLevel() == Token.BURST_LAYER && showBurstLayer) {
-            drawForm(g, Form.SQUARE, t, 5);
+            drawForm(g, Form.TRIANGLE, t, 5);
         } else if(t.getLevel() == Token.OBJECT_BURST_LAYER && showObjectBurstLayer) {
-            drawForm(g, Form.TRIANGLE, t, 6);
+            drawForm(g, Form.SQUARE, t, 6);
         } else if(t.getLevel() == Token.FLOW_INTERACTION_LAYER && showFlowInteractionLayer) {
             drawInterval(g, t, 3);
         } else if(t.getLevel() == Token.INTERACTION_LAYER && showInteractionLayer) {
@@ -138,6 +224,12 @@ public class TimelineCanvas extends Canvas {
     private void drawData(GraphicsContext g) {
 
         Token root = model.getRoot();
+        int maxLayer = getMaxLayer();
+        if(!isInitialized && root.getState().getNumSubTokens() > 0) {
+            isInitialized = true;
+            current = root.getTimeInterval().getStart() + timeInterval;
+        }
+
         Queue<Collection<Token>> bfsQueue = new LinkedList<>();
 
         bfsQueue.add(root.getSubTokens());
@@ -146,9 +238,35 @@ public class TimelineCanvas extends Canvas {
         while(!bfsQueue.isEmpty()) {
             Collection<Token> tokens = bfsQueue.remove();
             for(Token t : tokens) {
+
+                // only take traffic that contains observedHostsPrefix
+                if(observedHost.length() > 0 && 
+                    !t.getState().getSrcIP().equals(observedHost) && 
+                    !t.getState().getDstIP().equals(observedHost)) {
+
+                    continue;
+                }
+
+                // if token is on discussion layer, only take it if traffic egresses or ingresses
+                if(t.getLevel() == Token.DISCUSSION_LAYER && 
+                    observedHostsPrefix.length() > 0 &&
+                    !(t.getState().getSrcIP().startsWith(observedHostsPrefix) || 
+                    t.getState().getDstIP().startsWith(observedHostsPrefix))) {
+
+                    continue;
+                }
+
+                // only take traffic that is between hosts in hostToHostFilter
+                if(t.getLevel() == Token.DISCUSSION_LAYER && 
+                    hostToHostFilter.length() > 0 &&
+                    !t.getState().getHostToHostIdentifier().equals(hostToHostFilter)) {
+
+                    continue;
+                }
+
                 if(t.getTimeInterval().doIntersect(currentInterval)) {
                     drawToken(g, t);
-                    if(t.getLevel() < Token.PACKET_LAYER) {
+                    if(t.getLevel() < maxLayer) {
                         bfsQueue.add(t.getSubTokens());
                     }
                 }
@@ -156,14 +274,28 @@ public class TimelineCanvas extends Canvas {
         }
     }
 
-    static int i = 0;
-
     public void togglePlayMode() {
         if(isPlaying) {
             isPlaying = false;
         } else {
             isPlaying = true;
         }        
+    }
+
+    private int getMaxLayer() {
+        if(showPacketLayer) {
+            return Token.PACKET_LAYER;
+        } else if(showBurstLayer) {
+            return Token.BURST_LAYER;
+        } else if(showObjectBurstLayer) {
+            return Token.OBJECT_BURST_LAYER;
+        } else if(showFlowInteractionLayer) {
+            return Token.FLOW_INTERACTION_LAYER;
+        } else if(showInteractionLayer) {
+            return Token.INTERACTION_LAYER;
+        } else {
+            return Token.DISCUSSION_LAYER;
+        }
     }
 
 
@@ -205,8 +337,9 @@ public class TimelineCanvas extends Canvas {
         } else {
             showDiscussionLayer = false;
         }
-
     }
+
+
 
     public void handleScroll(double deltaY) {
         long lastInterval = timeInterval;
@@ -219,8 +352,6 @@ public class TimelineCanvas extends Canvas {
         current = mid + timeInterval / 2;
     }
 
-    // add listener for drag and drop to control the start time of the data shown in the canvas
-    // dragging left or right changes the start time of the data shown in the canvas
     public void handleMousePressed(double x) {
         startXDrag = x;
         startTimeOnDrag = current;

@@ -12,19 +12,19 @@ public class SimpleCombinationRule implements CombinationRule {
         TokenState decisionTokenState = decisionToken.getState();
         TokenState newTokenState = newToken.getState();
         switch (decisionToken.getLevel()) { // we never check the root token
-            case 1: // at host-to-host tokens
+            case Token.DISCUSSION_LAYER: // at host-to-host tokens
                 return true;
-            case 2:
+            case Token.INTERACTION_LAYER:
                 return decisionToken.getTimeInterval()
                     .getDifference(newToken.getTimeInterval()) < INTERACTION_TIME_THRESHOLD;
-            case 3: // at interaction tokens
+            case Token.FLOW_INTERACTION_LAYER: // at interaction tokens
                 return newTokenState.getBidirectionalFlowIdentifier()
                     .equals(decisionTokenState.getBidirectionalFlowIdentifier());
-            case 4: // at object burst tokens
+            case Token.OBJECT_BURST_LAYER: // at object burst tokens
                 return decisionToken.getTimeInterval()
                     .getDifference(newToken.getTimeInterval()) < OBJECT_BURST_TIME_THRESHOLD &&
                     decisionTokenState.getDstIP().equals(newTokenState.getDstIP());
-            case 5: // at burst tokens
+            case Token.BURST_LAYER: // at burst tokens
                 return decisionToken.getTimeInterval()
                     .getDifference(newToken.getTimeInterval()) < BURST_TIME_THRESHOLD && 
                     decisionTokenState.getDstIP().equals(newTokenState.getDstIP());

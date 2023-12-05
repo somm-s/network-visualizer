@@ -101,6 +101,7 @@ public class TokenPool {
 
         String srcAddr = packet.get(IpPacket.class).getHeader().getSrcAddr().getHostAddress();
         String dstAddr  = packet.get(IpPacket.class).getHeader().getDstAddr().getHostAddress();
+        Protocol protocol = Protocol.ANY;
         int bytes = packet.length();
         int srcPort = 0;
         int dstPort = 0;
@@ -112,6 +113,7 @@ public class TokenPool {
             if(tcpPacket.getPayload() != null) {
                 bytes = tcpPacket.getPayload().length();
             }
+            protocol = Protocol.TCP;
         } else if(packet.contains(UdpPacket.class)) {
             UdpPacket udpPacket = packet.get(UdpPacket.class);
             if(udpPacket.getPayload() != null) {
@@ -119,10 +121,11 @@ public class TokenPool {
             }
             srcPort = udpPacket.getHeader().getSrcPort().valueAsInt();
             dstPort = udpPacket.getHeader().getDstPort().valueAsInt();
+            protocol = Protocol.UDP;
         }
 
         SequentialToken token = allocateSequentialToken();
-        populateToken(token, TimeInterval.timeToMicro(timestamp), TimeInterval.timeToMicro(timestamp), Token.PACKET_LAYER, bytes, srcAddr, dstAddr, srcPort, dstPort, TokenState.Protocol.ANY);
+        populateToken(token, TimeInterval.timeToMicro(timestamp), TimeInterval.timeToMicro(timestamp), Token.PACKET_LAYER, bytes, srcAddr, dstAddr, srcPort, dstPort, protocol);
         return token;
     }
 

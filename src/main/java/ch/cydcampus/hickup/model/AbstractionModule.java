@@ -22,6 +22,7 @@ public class AbstractionModule extends Thread {
         System.out.println("AbstractionModule started");
         dataSource.registerReader();
         try {
+            Token last = null;
             while (running) {
                 Token token = dataSource.consume();
                 if(token == null) {
@@ -34,8 +35,12 @@ public class AbstractionModule extends Thread {
                 if(token.getState().getBytes() < 100) {
                     continue;
                 }
-
                 dataModel.insertToken(token, combinationRule);
+
+                if(last != null) {
+                    assert last.getTimeInterval().compareTo(token.getTimeInterval()) < 0;
+                }
+                last = token;
             }
         } catch (InterruptedException e) {
             e.printStackTrace();

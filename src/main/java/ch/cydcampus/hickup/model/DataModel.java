@@ -35,7 +35,6 @@ public class DataModel {
         // add packet to current BURST_LAYER token
         current.addSubToken(packetToken);
         current.createNewSubToken(packetToken, tokenPool);
-
     }
 
     public synchronized String toString() {

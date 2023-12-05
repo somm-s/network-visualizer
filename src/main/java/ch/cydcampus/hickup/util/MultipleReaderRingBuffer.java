@@ -45,7 +45,7 @@ public class MultipleReaderRingBuffer {
         long threadId = Thread.currentThread().getId();
         int readIndex = readIndexes.get(threadId).get();
         while (readIndex == writeIndex.get()) {
-            Thread.sleep(1); // change to use wait/notify
+            Thread.sleep(1); // TODO: change to use wait/notify
         }
 
         Object item = buffer[readIndex];
@@ -53,5 +53,19 @@ public class MultipleReaderRingBuffer {
         readIndexes.get(threadId).set(nextReadIndex);
 
         return item;
+    }
+
+    /*
+     * Returns the next element in the buffer without removing it.
+     * Returns null if buffer is empty.
+     */
+    public Object peek() {
+        long threadId = Thread.currentThread().getId();
+        int readIndex = readIndexes.get(threadId).get();
+        if (readIndex == writeIndex.get()) {
+            return null;
+        }
+
+        return buffer[readIndex];
     }
 }

@@ -10,7 +10,7 @@ import java.util.TimeZone;
 /*
  * Represents a microsecond precision time interval and provides methods for conversion.
  */
-public class TimeInterval {
+public class TimeInterval implements Comparable<TimeInterval> {
 
     public static final DateTimeFormatter timeFormatter = new DateTimeFormatterBuilder()
         .appendPattern("yyyy-MM-dd HH:mm:ss")
@@ -108,7 +108,7 @@ public class TimeInterval {
         this.end = timeInterval.getEnd();
     }
 
-    private Instant microToInstant(long micros) {
+    public static Instant microToInstant(long micros) {
         long millis = micros / 1000;
         int nanos = (int) ((micros % 1000) * 1000);
         return Instant.ofEpochMilli(millis).plusNanos(nanos);
@@ -143,6 +143,23 @@ public class TimeInterval {
         String timeString = timeFormatter.format(instant);
 
         return timeString;
+    }
+
+    @Override
+    public int compareTo(TimeInterval other) {
+        if (start < other.getStart()) {
+            return -1;
+        } else if (start > other.getStart()) {
+            return 1;
+        } else {
+            if (end < other.getEnd()) {
+                return -1;
+            } else if (end > other.getEnd()) {
+                return 1;
+            } else {
+                return 0;
+            }
+        }
     }
 
 }

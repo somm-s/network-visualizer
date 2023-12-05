@@ -12,7 +12,7 @@ import ch.cydcampus.hickup.util.MultipleReaderRingBuffer;
 
 public class NetworkCaptureSource extends Thread implements DataSource {
     
-    public static final int BUFFER_SIZE = 100000;
+    public static final int BUFFER_SIZE = 1000;
     private PcapHandle pcapHandle;
     private MultipleReaderRingBuffer buffer;
     private volatile boolean isRunning = true;
@@ -64,5 +64,9 @@ public class NetworkCaptureSource extends Thread implements DataSource {
     @Override
     public void stopProducer() {
         stopThread();
+    }
+
+    public Token peek() {
+        return (Token) buffer.peek();
     }
 }

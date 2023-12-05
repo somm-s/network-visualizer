@@ -50,7 +50,7 @@ public interface Token {
 
     /*
      * Returns the child of this token that can be used together with the CombinationRule
-     * to decide whether a new new subToken should be created.
+     * to decide whether a new subToken should be created.
      */
     public Token getDecidingChild(Token packetToken);
 
