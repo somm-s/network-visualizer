@@ -237,7 +237,6 @@ public class TimelineCanvas extends Canvas {
         while(!bfsQueue.isEmpty()) {
             Collection<Token> tokens = bfsQueue.remove();
             for(Token t : tokens) {
-
                 // only take traffic including observedHost
                 if(observedHost.length() > 0 && 
                     !t.getState().getSrcIP().equals(observedHost) && 

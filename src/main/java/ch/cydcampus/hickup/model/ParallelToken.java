@@ -145,6 +145,8 @@ public class ParallelToken implements Token{
             subToken.deallocate();
         }
         subTokens.clear();
-        TokenPool.getPool().releaseParallelToken(this);
+        if(level != ROOT_LAYER) {
+            TokenPool.getPool().releaseParallelToken(this);
+        }
     }
 }
