@@ -40,4 +40,9 @@ public class DataModel {
     public synchronized String toString() {
         return root.deepToString();
     }
+
+    public synchronized void clear() {
+        root.deallocate();
+        root = new ParallelToken();
+    }
 }

@@ -115,4 +115,13 @@ public class SequentialToken implements Token {
         return sb.toString();
     }
 
+    @Override
+    public void deallocate() {
+        for(Token subToken : subTokens) {
+            subToken.deallocate();
+        }
+        subTokens.clear();
+        TokenPool.getPool().releaseSequentialToken(this);
+    }
+
 }

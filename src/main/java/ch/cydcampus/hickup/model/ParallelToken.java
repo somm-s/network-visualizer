@@ -138,4 +138,13 @@ public class ParallelToken implements Token{
         }
         return sb.toString();
     }
+
+    @Override
+    public void deallocate() {
+        for(Token subToken : subTokens.values()) {
+            subToken.deallocate();
+        }
+        subTokens.clear();
+        TokenPool.getPool().releaseParallelToken(this);
+    }
 }

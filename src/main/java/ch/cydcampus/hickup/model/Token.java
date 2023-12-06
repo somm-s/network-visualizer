@@ -60,6 +60,12 @@ public interface Token {
      */
     public Token createNewSubToken(Token packetToken, TokenPool tokenPool);
 
+
+    /*
+     * Deallocates node and all child nodes.
+     */
+     public void deallocate();
+
     /*
      * Returns a string representation of the token tree.
      */

@@ -10,7 +10,8 @@ public class AbstractionModule extends Thread {
     private DataModel dataModel;
     private DataSource dataSource;
     private boolean running = true;
-    
+    private int sizeThreshold = 100;
+
     public AbstractionModule(DataModel dataModel, DataSource dataSource, CombinationRule combinationRule) {
         this.dataModel = dataModel;
         this.dataSource = dataSource;
@@ -31,8 +32,7 @@ public class AbstractionModule extends Thread {
                     break;
                 }
 
-                // TODO: filter out inappropriate packets, e.g. too small with separate filter class.
-                if(token.getState().getBytes() < 100) {
+                if(token.getState().getBytes() < sizeThreshold) {
                     continue;
                 }
                 dataModel.insertToken(token, combinationRule);
@@ -47,8 +47,13 @@ public class AbstractionModule extends Thread {
         }
     }
 
+    public void setSizeThreshold(int sizeThreshold) {
+        this.sizeThreshold = sizeThreshold;
+    } 
+
     public void stopThread() {
         running = false;
+        dataSource.stopProducer();
     }
 
 }

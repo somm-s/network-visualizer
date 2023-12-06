@@ -25,7 +25,6 @@ import org.pcap4j.packet.UdpPacket;
 import javafx.scene.canvas.GraphicsContext;
 
 public abstract class IPPoint implements Comparable<IPPoint>{
-
     static String url = "jdbc:postgresql://localhost:5432/ls22";
     static String user = "lab";
     static String password = "lab";

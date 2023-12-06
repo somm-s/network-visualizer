@@ -193,7 +193,6 @@ public class TimelineCanvas extends Canvas {
     private double getY(Token t) {
         long bytes = t.getState().getBytes();
         String srcIp = t.getState().getSrcIP();
-
         if(observedHostsPrefix.length() > 0 && srcIp.startsWith(observedHostsPrefix)) {
             return getHeight() / 2 + getHeight() * Math.log(bytes) / maxVal / 2;
         }
@@ -239,11 +238,10 @@ public class TimelineCanvas extends Canvas {
             Collection<Token> tokens = bfsQueue.remove();
             for(Token t : tokens) {
 
-                // only take traffic that contains observedHostsPrefix
+                // only take traffic including observedHost
                 if(observedHost.length() > 0 && 
                     !t.getState().getSrcIP().equals(observedHost) && 
                     !t.getState().getDstIP().equals(observedHost)) {
-
                     continue;
                 }
 
@@ -252,7 +250,6 @@ public class TimelineCanvas extends Canvas {
                     observedHostsPrefix.length() > 0 &&
                     !(t.getState().getSrcIP().startsWith(observedHostsPrefix) || 
                     t.getState().getDstIP().startsWith(observedHostsPrefix))) {
-
                     continue;
                 }
 
@@ -260,10 +257,10 @@ public class TimelineCanvas extends Canvas {
                 if(t.getLevel() == Token.DISCUSSION_LAYER && 
                     hostToHostFilter.length() > 0 &&
                     !t.getState().getHostToHostIdentifier().equals(hostToHostFilter)) {
-
                     continue;
                 }
 
+                // only take traffic that is visible in the current time interval
                 if(t.getTimeInterval().doIntersect(currentInterval)) {
                     drawToken(g, t);
                     if(t.getLevel() < maxLayer) {
@@ -282,6 +279,10 @@ public class TimelineCanvas extends Canvas {
         }        
     }
 
+    public void setPlayingMode(boolean playingMode) {
+        this.isPlaying = playingMode;
+    }
+
     private int getMaxLayer() {
         if(showPacketLayer) {
             return Token.PACKET_LAYER;
@@ -297,7 +298,6 @@ public class TimelineCanvas extends Canvas {
             return Token.DISCUSSION_LAYER;
         }
     }
-
 
     public void setFilter(String filter) {
         this.filter = filter;
@@ -339,8 +339,6 @@ public class TimelineCanvas extends Canvas {
         }
     }
 
-
-
     public void handleScroll(double deltaY) {
         long lastInterval = timeInterval;
         long mid = current - timeInterval / 2;
@@ -363,7 +361,6 @@ public class TimelineCanvas extends Canvas {
         // adjust start time
         current = (long) ((double) startTimeOnDrag - delta * timeInterval / this.getWidth());
     }
-
 
     public void draw() {
         if(isPlaying) {

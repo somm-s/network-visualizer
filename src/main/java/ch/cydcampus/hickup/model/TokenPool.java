@@ -155,6 +155,15 @@ public class TokenPool {
         return token;
     }
 
+    /*
+     * Allocate a sequential (packet) token with all fields
+     */
+    public SequentialToken allocateFromFields(Protocol protocol, int bytes, TimeInterval timeInterval, String srcAddr, String dstAddr, int srcPort, int dstPort) {
+        SequentialToken token = allocateSequentialToken();
+        populateToken(token, timeInterval.getStart(), timeInterval.getEnd(), Token.PACKET_LAYER, bytes, srcAddr, dstAddr, srcPort, dstPort, protocol);
+        return token;
+    }
+
     private SequentialToken allocateSequentialToken() {
         SequentialToken token = sequentialTokenQueue.poll();
         if (token == null) {
@@ -165,7 +174,7 @@ public class TokenPool {
         return token;
     }
 
-    private ParallelToken allocateParallelToken() {
+    ParallelToken allocateParallelToken() {
         ParallelToken token = parallelTokenQueue.poll();
         if (token == null) {
             TokenState tokenState = new TokenState();
