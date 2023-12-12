@@ -16,14 +16,25 @@ import javafx.scene.paint.Color;
 
 public class TimelineCanvas extends Canvas {
 
+    public static enum Form {
+        CIRCLE, SQUARE, TRIANGLE, DIAMOND, CROSS, PLUS, STAR, INTERVAL
+    }
 
+    public static final int PACKET_LAYER_SIZE = 5;
+    public static final int BURST_LAYER_SIZE = 7;
+    public static final int OBJECT_BURST_LAYER_SIZE = 7;
+    public static final int FLOW_INTERACTION_LAYER_SIZE = 3;
+    public static final int INTERACTION_LAYER_SIZE = 4;
+    public static final int DISCUSSION_LAYER_SIZE = 5;
 
+    boolean didHover = false;
     double maxVal = 24;
     String filter;
     String observedHostsPrefix = "";
     String observedHost = "";
     String hostToHostFilter = "";
     boolean isPlaying = false;
+    boolean portDistinction = false;
     boolean isInitialized = false;
     long timeInterval = 100000000L; // 100 seconds
     long current = System.currentTimeMillis() * 1000; // set to current time in microseconds every time draw is called
@@ -36,12 +47,17 @@ public class TimelineCanvas extends Canvas {
     boolean showDiscussionLayer = false;
     double startXDrag = 0;
     long startTimeOnDrag = 0;
+    Token hoveredToken = null;
+    double mouseX = 0;
+    double mouseY = 0;
 
     String[] timeLegends = new String[] {"1μs", "10μs", "100μs", "1ms", "10ms", "100ms", "1s", "10s", "100s", "1000s", "10000s", "100000s", "1000000s"};
     Long[] timeLegendsMicros = new Long[] {1L, 10L, 100L, 1000L, 10000L, 100000L, 1000000L, 10000000L, 100000000L, 1000000000L, 10000000000L, 100000000000L, 1000000000000L};
 
-    public static enum Form {
-        CIRCLE, SQUARE, TRIANGLE, DIAMOND, CROSS, PLUS, STAR
+
+
+    public void togglePortDistinction() {
+        portDistinction = !portDistinction;
     }
 
     public TimelineCanvas(DataModel model) {
@@ -151,6 +167,7 @@ public class TimelineCanvas extends Canvas {
     private void drawForm(GraphicsContext g, Form form, Token t, double size) {
         double x = getX(t);
         double y = getY(t);
+
         Color c = getHostColor(t);
         g.setFill(c);
         if(form == Form.CIRCLE) {
@@ -176,6 +193,10 @@ public class TimelineCanvas extends Canvas {
     } 
 
     private Color getHostColor(Token t) {
+        if(portDistinction) {
+            return Color.hsb(Math.abs(t.getState().getBidirectionalFlowIdentifier().hashCode()) % 360, 1, 1);
+        }
+
         return Color.hsb(Math.abs(t.getState().getHostToHostIdentifier().hashCode()) % 360, 1, 1);
     }
 
@@ -201,20 +222,83 @@ public class TimelineCanvas extends Canvas {
         return getHeight() / 2 - getHeight() * Math.log(bytes) / maxVal / 2;
     }
 
-    private void drawToken(GraphicsContext g, Token t) {
+    private void checkHover(Token t, Form form, double size) {
+        double x = getX(t);
+        double y = getY(t);
 
+        if(form == Form.CIRCLE) {
+            // circle bounding box with pythagoras
+            if(Math.pow(x - mouseX, 2) + Math.pow(y - mouseY, 2) <= Math.pow(size / 2, 2)) {
+                hoveredToken = t;
+                return;
+            }            
+        } else if(form == Form.TRIANGLE) {
+            // triangle bounding box with line side test
+            double x1 = x - size / 2;
+            double x2 = x + size / 2;
+            double x3 = x;
+            double y1 = y + size / 2;
+            double y2 = y + size / 2;
+            double y3 = y - size / 2;
+            // Calculate the barycentric coordinates
+            double denominator = (y2 - y3) * (x1 - x3) + (x3 - x2) * (y1 - y3);
+            double alpha = ((y2 - y3) * (mouseX - x3) + (x3 - x2) * (mouseY - y3)) / denominator;
+            double beta = ((y3 - y1) * (mouseX - x3) + (x1 - x3) * (mouseY - y3)) / denominator;
+            double gamma = 1 - alpha - beta;
+
+            // Check if the mouse is inside the triangle
+            if(alpha > 0 && beta > 0 && gamma > 0) {
+                hoveredToken = t;
+                return;
+            }
+
+        } else if(form == Form.SQUARE) {
+            // square bounding box
+            if(Math.abs(x - mouseX) <= size / 2 && Math.abs(y - mouseY) <= size / 2) {
+                hoveredToken = t;
+                return;
+            }
+        } else if(form == Form.INTERVAL) {
+            // interval bounding box
+            TimeInterval interval = t.getTimeInterval();
+            double x1 = getX(interval.getStart());
+            double x2 = getX(interval.getEnd());
+
+            if(x1 == x2) {
+                x1 -= 1;
+                x2 += 1;
+            }
+
+            double y1 = getY(t) - size / 2;
+            double y2 = y1 + size;
+            if(x1 <= mouseX && mouseX <= x2 && y1 <= mouseY && mouseY <= y2) {
+                hoveredToken = t;
+                return;
+            }
+        } else {
+            // don't check for other forms
+        }
+    }
+
+    private void drawToken(GraphicsContext g, Token t) {
         if(t.getLevel() == Token.PACKET_LAYER && showPacketLayer) {
-            drawForm(g, Form.CIRCLE, t, 2);
+            drawForm(g, Form.CIRCLE, t, PACKET_LAYER_SIZE);
+            checkHover(t, Form.CIRCLE, PACKET_LAYER_SIZE);
         } else if(t.getLevel() == Token.BURST_LAYER && showBurstLayer) {
-            drawForm(g, Form.TRIANGLE, t, 5);
+            drawForm(g, Form.TRIANGLE, t, BURST_LAYER_SIZE);
+            checkHover(t, Form.TRIANGLE, BURST_LAYER_SIZE);
         } else if(t.getLevel() == Token.OBJECT_BURST_LAYER && showObjectBurstLayer) {
-            drawForm(g, Form.SQUARE, t, 6);
+            drawForm(g, Form.SQUARE, t, OBJECT_BURST_LAYER_SIZE);
+            checkHover(t, Form.SQUARE, OBJECT_BURST_LAYER_SIZE);
         } else if(t.getLevel() == Token.FLOW_INTERACTION_LAYER && showFlowInteractionLayer) {
-            drawInterval(g, t, 3);
+            drawInterval(g, t, FLOW_INTERACTION_LAYER_SIZE);
+            checkHover(t, Form.INTERVAL, FLOW_INTERACTION_LAYER_SIZE);
         } else if(t.getLevel() == Token.INTERACTION_LAYER && showInteractionLayer) {
-            drawInterval(g, t, 4);
+            drawInterval(g, t, INTERACTION_LAYER_SIZE);
+            checkHover(t, Form.INTERVAL, INTERACTION_LAYER_SIZE);
         } else if(t.getLevel() == Token.DISCUSSION_LAYER && showDiscussionLayer) {
-            drawInterval(g, t, 5);
+            drawInterval(g, t, DISCUSSION_LAYER_SIZE);
+            checkHover(t, Form.INTERVAL, DISCUSSION_LAYER_SIZE);
         } else {
             // don't draw anything
         }
@@ -346,6 +430,12 @@ public class TimelineCanvas extends Canvas {
         } else if (deltaY < 0) {
             timeInterval = (long) (0.9 * (double) lastInterval);
         }
+        // cap min and max time interval
+        if(timeInterval < 10L) {
+            timeInterval = 10L;
+        } else if(timeInterval > 100000000000000L) {
+            timeInterval = 100000000000000L;
+        }
         current = mid + timeInterval / 2;
     }
 
@@ -362,6 +452,7 @@ public class TimelineCanvas extends Canvas {
     }
 
     public void draw() {
+        hoveredToken = null;
         if(isPlaying) {
             current = System.currentTimeMillis() * 1000;
         }
@@ -369,5 +460,15 @@ public class TimelineCanvas extends Canvas {
         GraphicsContext gc = getGraphicsContext2D();
         drawBackground(gc);
         drawData(gc);
+    }
+
+    public void handleMouseMoved(double x, double y) {
+        mouseX = x;
+        mouseY = y;
+        didHover = true;
+    }
+
+    public Token getHoveredToken() {
+        return hoveredToken;
     }
 }

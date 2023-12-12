@@ -75,7 +75,7 @@ public class Controller {
                 playingMode = true;
                 break;
             case "Database":
-                this.dataSource = new DataBaseSource(params[0], Integer.parseInt(params[1]), params[2], params[3], params[4], params[5], params[7], params[8], params[9]);
+                this.dataSource = new DataBaseSource(params[0], Integer.parseInt(params[1]), params[2], params[3], params[4], params[5], params[7], params[8], params[9], params[10]);
                 System.out.println("Database source created");
                 sizeThreshold = Integer.parseInt(params[6]);
                 break;
@@ -93,6 +93,8 @@ public class Controller {
                 return;
         }
 
+        dataModel.clear();
+
         // load data
         abstractionModule = new AbstractionModule(dataModel, dataSource, combinationRule);
         abstractionModule.setSizeThreshold(sizeThreshold);
@@ -109,7 +111,6 @@ public class Controller {
     public void showMenuScene() {
         stopPeriodicUpdate();
         abstractionModule.stopThread();
-        dataModel.clear();
         view.switchToMenuScene();
     }
 

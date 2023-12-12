@@ -66,6 +66,11 @@ public class TimelineScene extends Scene {
         observedHostsTextField = new TextField(observedHosts);
         applyFilterButton = new Button("Play/Pause");
 
+        // Add listener to canvas for mouse movement for hover panel
+        canvas.setOnMouseMoved(event -> {
+            canvas.handleMouseMoved(event.getX(), event.getY());
+        });
+
         // Set up event handlers
         applyFilterButton.setOnAction(event -> {
             canvas.togglePlayMode();
@@ -101,8 +106,25 @@ public class TimelineScene extends Scene {
         hostComboBox.setOnAction(event -> {
             String filter = hostComboBox.getValue();
             if(filter != null) {
-                canvas.setHostToHostFilter("");
+                if(filter.equals("")) {
+                    canvas.setHostToHostFilter("");
+                    canvas.setObservedHost("");
+                    return;
+                }
+
+                String hostToHostFilter = hostToHostComboBox.getValue();
+                
+                // reset host to host filter if it does not contain the filter
+                if(hostToHostFilter != null && !hostToHostFilter.contains(filter)) {
+                    hostToHostComboBox.setValue(""); // TODO: Proper state machine for visualizer!
+                }
+                if(observedHosts.equals("")) {
+                    observedHosts = filter;
+                    observedHostsTextField.setText(observedHosts);
+                }
                 canvas.setObservedHostsPrefix(filter);
+                canvas.setObservedHost(filter);
+
             }        
         });
         controlPane.getChildren().add(hostComboBox);
@@ -112,6 +134,15 @@ public class TimelineScene extends Scene {
         hostToHostComboBox.setOnAction(event -> {
             String filter = hostToHostComboBox.getValue();
             if(filter != null) {
+                if(filter.equals("")) {
+                    canvas.setHostToHostFilter("");
+                    return;
+                }
+
+                String firstHost = filter.split("-")[0];
+                if(hostComboBox.getValue().equals("")) {
+                    hostComboBox.setValue(firstHost);
+                }
                 canvas.setHostToHostFilter(filter);
             }
         });
@@ -123,6 +154,16 @@ public class TimelineScene extends Scene {
             controller.showMenuScene();
         });
         controlPane.getChildren().add(exitButton);
+
+
+        // toggle port distinction mode button
+        Button portDistinctionButton = new Button("Toggle Port Distinction");
+        portDistinctionButton.setOnAction(event -> {
+            canvas.togglePortDistinction();
+        });
+        controlPane.getChildren().add(portDistinctionButton);
+
+
         setRoot(root);
     }
 
@@ -182,11 +223,24 @@ public class TimelineScene extends Scene {
         canvas.setPlayingMode(playingMode);
     }
 
+    Token lastHoveredToken = null;
+
     public void updateTimelineView() {
         updateCounter++;
         if(updateCounter % 100 == 0) {
             updateHosts();
         }
+
         canvas.draw();
+
+        // check hovered token
+        Token hoveredToken = canvas.getHoveredToken();
+        if(hoveredToken != null) {
+            if(lastHoveredToken == null || !hoveredToken.equals(lastHoveredToken)) {
+                System.out.println("Hovered token: " + hoveredToken);
+                System.out.println("Hovered token state: " + hoveredToken.getState());
+                lastHoveredToken = hoveredToken;
+            }
+        }
     }
 }

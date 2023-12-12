@@ -24,18 +24,18 @@ import javafx.scene.text.Text;;
 
 public class DataSourceSelectionScene extends Scene {
 
-    private static final int DB_PARAMS = 10;
+    private static final int DB_PARAMS = 11;
     private static final int FILE_PARAMS = 4;
     private static final int NETWORK_CAPTURE_PARAMS = 3;
     private static final int DOUBLE_INTERFACE_PARAMS = 4;
-    private static final String[] DB_PARAM_NAMES = {"Host", "Port", "Database", "User", "Password", "Table", "Minimum Packet Size", "Host Selection", "Start Time", "End Time"};
+    private static final String[] DB_PARAM_NAMES = {"Host", "Port", "Database", "User", "Password", "Table", "Minimum Packet Size", "Host Selection", "Host 2 Selection", "Start Time", "End Time"};
     private static final String[] FILE_PARAM_NAMES = {"File Path", "Minimum Packet Size", "Start Time", "End Time"};
     private static final String[] NETWORK_CAPTURE_PARAM_NAMES = {"Interface", "Minimum Packet Size", "Berkley Packet Filter"};
     private static final String[] DOUBLE_INTERFACE_PARAM_NAMES = {"Interface 1", "Interface 2", "Minimum Packet Size", "Berkley Packet Filter"};
-    private static final String[] DB_PARAM_PRESET = {"localhost", "5432", "ls22", "lab", "lab", "packets", "50", "94.246.227.141", "2022-04-18 00:00:00.000000", "2022-04-23 00:00:01.000000"};
-    private static final String[] FILE_PARAM_PRESET = {"src/main/resources/test.ip.csv", "50", "", ""};
-    private static final String[] NETWORK_CAPTURE_PARAM_PRESET = {"wlp0s20f3", "50", ""};
-    private static final String[] DOUBLE_INTERFACE_PARAM_PRESET = {"wlp0s20f3", "wlp0s20f3", "50", ""};
+    private static final String[] DB_PARAM_PRESET = {"localhost", "5432", "ls22", "lab", "lab", "packets", "150", "94.246.227.141", "", "2022-04-18 00:00:00.000000", "2022-04-23 00:00:01.000000"};
+    private static final String[] FILE_PARAM_PRESET = {"src/main/resources/test.ip.csv", "150", "", ""};
+    private static final String[] NETWORK_CAPTURE_PARAM_PRESET = {"wlp0s20f3", "150", ""};
+    private static final String[] DOUBLE_INTERFACE_PARAM_PRESET = {"wlp0s20f3", "wlp0s20f3", "150", ""};
 
     private Controller control;
     private StackPane rootPane;

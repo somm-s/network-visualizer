@@ -1,5 +1,9 @@
 package ch.cydcampus.hickup.model;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -14,17 +18,18 @@ import ch.cydcampus.hickup.util.TimeInterval;
 
 public class DataBaseSource implements DataSource {
 
-    private String host;
-    private int port;
-    private String database;
-    private String user;
-    private String password;
+    private static final String HOST_PAIR_FILE_PATH = "/home/lab/Documents/thesis/host_to_host_pairs.csv";
+    private static final int MIN_PACKETS = 1;
+    private static final int MAX_PACKETS = 1000;
+    private static final int NUM_REPETITIONS = 2000;
     private String table;
+    private String observedHostFilter;
     private String hostFilter;
     private String startTime;
     private String endTime;
     private String url;
-
+    private boolean sampling = false;
+    private int sampleCount = 0;
     private Token[] points = null;
     private int index = 0;
 
@@ -32,17 +37,18 @@ public class DataBaseSource implements DataSource {
 
     private Connection connection;
 
-    public DataBaseSource(String host, int port, String database, String user, String password, String table, String hostFilter, String startTime, String endTime) {
-        this.host = host;
-        this.port = port;
-        this.database = database;
-        this.user = user;
-        this.password = password;
+    public DataBaseSource(String host, int port, String database, String user, String password, String table, String hostFilter, String observedHostFilter, String startTime, String endTime) {
         this.table = table;
         this.hostFilter = hostFilter;
+        this.observedHostFilter = observedHostFilter;
         this.startTime = startTime;
         this.endTime = endTime;
         this.url = "jdbc:postgresql://" + host + ":" + port + "/" + database;
+
+        if(hostFilter.equals("") && observedHostFilter.equals("")) {
+            sampling = true;
+            getRandomHostPair();
+        }
 
         // connect to the database
         try {
@@ -53,15 +59,66 @@ public class DataBaseSource implements DataSource {
         }
     }
 
+    private void getRandomHostPair() {
+        try {
+            int numPackets = sampleHostPair();
+            while(numPackets < MIN_PACKETS || numPackets > MAX_PACKETS) {
+                System.out.println("Sampled host pair with less than " + MIN_PACKETS + " packets, sampling again.");
+                numPackets = sampleHostPair();
+            }
+        } catch (IOException e) {
+            System.err.println("Error sampling host pair: " + e.getMessage());
+        }
+    }
+
+    private int sampleHostPair() throws IOException {
+        // open file with host pairs (csv)
+        File hostPairFile = new File(HOST_PAIR_FILE_PATH);
+        if(!hostPairFile.exists()) {
+            System.err.println("Host pair file not found at " + HOST_PAIR_FILE_PATH);
+            System.exit(1);
+        }
+
+        // sample from file
+        BufferedReader br = new BufferedReader(new FileReader(hostPairFile));
+        // read header line
+        String line = br.readLine();
+        // read everything
+        LinkedList<String> hostPairs = new LinkedList<String>();
+        while((line = br.readLine()) != null) {
+            hostPairs.add(line);
+        }
+        br.close();
+
+        // select random host pair
+        String[] hostPair = hostPairs.get((int) (Math.random() * hostPairs.size())).split(",");
+
+        this.hostFilter = hostPair[0];
+        this.observedHostFilter = hostPair[1];
+        this.startTime = "";
+        this.endTime = "";
+        System.out.println("Loading Host Pair: " + hostPair[0] + " -> " + hostPair[1]);
+        return Integer.parseInt(hostPair[2]);
+    }
+
     @Override
     public Token consume() throws InterruptedException {
         if(!dataLoaded) {
-            points = getPointsFromSQL(startTime, endTime, hostFilter, "", 0);
+            points = getPointsFromSQL(startTime, endTime, hostFilter, observedHostFilter, 0);
             System.out.println("Loaded " + points.length + " points from database.");
             dataLoaded = true;
         }
 
         if(points == null || index >= points.length) {
+            if(sampling && sampleCount < NUM_REPETITIONS) {
+                sampleCount++;
+                getRandomHostPair();
+                index = 0;
+                dataLoaded = false;
+                points = null;
+                return consume();
+            }
+
             return null;
         }
         return points[index++];
@@ -100,6 +157,7 @@ public class DataBaseSource implements DataSource {
         if(!startTime.equals("") && !endTime.equals("")) {
             query += " AND timestamp BETWEEN '" + startTime + "' AND '" + endTime + "'";
         }
+        query += " ORDER BY timestamp";
         
         if (limit > 0) {
             query += " LIMIT " + limit;

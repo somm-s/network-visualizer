@@ -3,7 +3,7 @@ package ch.cydcampus.hickup.model;
 public class SimpleCombinationRule implements CombinationRule {
 
     public static final long INTERACTION_TIME_THRESHOLD = 1000000L; // 1 second
-    public static final long OBJECT_BURST_TIME_THRESHOLD = 100000L; // 100 milliseconds
+    public static final long OBJECT_BURST_TIME_THRESHOLD = 30000L; // 30 milliseconds
     public static final long BURST_TIME_THRESHOLD = 1000L; // 1 millisecond
 
     @Override

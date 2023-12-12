@@ -7,7 +7,7 @@ public class DataModel {
     private Token root = new ParallelToken();
     private TokenPool tokenPool = TokenPool.getPool();
 
-    public Token getRoot() {
+    public synchronized Token getRoot() {
         return root;
     }
 
