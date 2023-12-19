@@ -20,8 +20,8 @@ public class DataBaseSource implements DataSource {
 
     private static final String HOST_PAIR_FILE_PATH = "/home/lab/Documents/thesis/host_to_host_pairs.csv";
     private static final int MIN_PACKETS = 1;
-    private static final int MAX_PACKETS = 1000;
-    private static final int NUM_REPETITIONS = 2000;
+    private static final int MAX_PACKETS = 1000000;
+    private static final int NUM_REPETITIONS = 10;
     private String table;
     private String observedHostFilter;
     private String hostFilter;
@@ -32,17 +32,18 @@ public class DataBaseSource implements DataSource {
     private int sampleCount = 0;
     private Token[] points = null;
     private int index = 0;
-
     private boolean dataLoaded = false;
+    private String portFilter;
 
     private Connection connection;
 
-    public DataBaseSource(String host, int port, String database, String user, String password, String table, String hostFilter, String observedHostFilter, String startTime, String endTime) {
+    public DataBaseSource(String host, int port, String database, String user, String password, String table, String hostFilter, String observedHostFilter, String portFilter, String startTime, String endTime) {
         this.table = table;
         this.hostFilter = hostFilter;
         this.observedHostFilter = observedHostFilter;
         this.startTime = startTime;
         this.endTime = endTime;
+        this.portFilter = portFilter;
         this.url = "jdbc:postgresql://" + host + ":" + port + "/" + database;
 
         if(hostFilter.equals("") && observedHostFilter.equals("")) {
@@ -153,6 +154,9 @@ public class DataBaseSource implements DataSource {
         }
         if(!dstHost.equals("")) {
             query += " AND (src_ip = '" + dstHost + "' OR dst_ip = '" + dstHost + "')";
+        }
+        if(!portFilter.equals("")) {
+            query += " AND (src_port = " + portFilter + " OR dst_port = " + portFilter + ")";
         }
         if(!startTime.equals("") && !endTime.equals("")) {
             query += " AND timestamp BETWEEN '" + startTime + "' AND '" + endTime + "'";

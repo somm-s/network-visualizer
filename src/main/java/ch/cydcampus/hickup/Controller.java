@@ -17,7 +17,6 @@ import ch.cydcampus.hickup.model.SimpleCombinationRule;
 import ch.cydcampus.hickup.view.View;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
-import javafx.application.Platform;
 import javafx.util.Duration;
 
 public class Controller {
@@ -29,6 +28,7 @@ public class Controller {
     private AbstractionModule abstractionModule;
     private DataSource dataSource;
     private CombinationRule combinationRule;
+    private Tokenizer tokenizer;
 
     public Controller(View view, DataModel model) {
         this.view = view;
@@ -61,7 +61,7 @@ public class Controller {
         boolean playingMode = false;
         switch(description) {
             case "Network Capture":
-                this.dataSource = new NetworkCaptureSource(params[0]);
+                this.dataSource = new NetworkCaptureSource(params[0], params[2]);
                 sizeThreshold = Integer.parseInt(params[1]);
                 playingMode = true;
                 break;
@@ -70,12 +70,12 @@ public class Controller {
                 sizeThreshold = Integer.parseInt(params[1]);
                 break;
             case "Double Interface":
-                this.dataSource = new DoubleInterfaceSource(params[0], params[1]);
+                this.dataSource = new DoubleInterfaceSource(params[0], params[1], params[3]);
                 sizeThreshold = Integer.parseInt(params[2]);
                 playingMode = true;
                 break;
             case "Database":
-                this.dataSource = new DataBaseSource(params[0], Integer.parseInt(params[1]), params[2], params[3], params[4], params[5], params[7], params[8], params[9], params[10]);
+                this.dataSource = new DataBaseSource(params[0], Integer.parseInt(params[1]), params[2], params[3], params[4], params[5], params[7], params[8], params[9], params[10], params[11]);
                 System.out.println("Database source created");
                 sizeThreshold = Integer.parseInt(params[6]);
                 break;
@@ -94,6 +94,8 @@ public class Controller {
         }
 
         dataModel.clear();
+        tokenizer = new Tokenizer(dataModel);
+        tokenizer.start();
 
         // load data
         abstractionModule = new AbstractionModule(dataModel, dataSource, combinationRule);
@@ -111,7 +113,17 @@ public class Controller {
     public void showMenuScene() {
         stopPeriodicUpdate();
         abstractionModule.stopThread();
+        dataModel.finishTokenStream();
         view.switchToMenuScene();
+
+        // tokenizer needs to finish emptying the token stream
+        try {
+            Thread.sleep(3000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        tokenizer.stopThread();
+        tokenizer.closeStreams();
     }
 
 }

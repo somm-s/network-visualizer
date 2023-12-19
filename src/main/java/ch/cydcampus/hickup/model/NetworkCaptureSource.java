@@ -2,6 +2,8 @@ package ch.cydcampus.hickup.model;
 
 import java.io.EOFException;
 import java.util.concurrent.TimeoutException;
+
+import org.pcap4j.core.BpfProgram;
 import org.pcap4j.core.NotOpenException;
 import org.pcap4j.core.PcapHandle;
 import org.pcap4j.core.PcapNativeException;
@@ -17,9 +19,11 @@ public class NetworkCaptureSource extends Thread implements DataSource {
     private MultipleReaderRingBuffer buffer;
     private volatile boolean isRunning = true;
 
-    public NetworkCaptureSource(String networkInterface) throws PcapNativeException, NotOpenException {
+    public NetworkCaptureSource(String networkInterface, String berkleyPacketFilter) throws PcapNativeException, NotOpenException {
+        BpfProgram.BpfCompileMode mode = BpfProgram.BpfCompileMode.OPTIMIZE;
         PcapNetworkInterface device = Pcaps.getDevByName(networkInterface);
         this.pcapHandle = device.openLive(65536, PcapNetworkInterface.PromiscuousMode.PROMISCUOUS, 10);
+        pcapHandle.setFilter(berkleyPacketFilter, mode);
         this.buffer = new MultipleReaderRingBuffer(BUFFER_SIZE);
         this.start();
     }

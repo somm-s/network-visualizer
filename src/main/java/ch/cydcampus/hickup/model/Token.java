@@ -1,7 +1,6 @@
 package ch.cydcampus.hickup.model;
 
 import java.util.Collection;
-import java.util.List;
 import ch.cydcampus.hickup.util.TimeInterval;
 
 /*
@@ -16,20 +15,34 @@ import ch.cydcampus.hickup.util.TimeInterval;
 public interface Token {
 
     enum TokenType {
-        PARALLEL, SEQUENTIAL
+        PARALLEL, SEQUENTIAL;
+        public static TokenType fromLayer(int Layer) {
+            switch(Layer) {
+                case ROOT_LAYER:
+                    return SEQUENTIAL;
+                case ACTIVITY_LAYER:
+                    return PARALLEL;
+                case DISCUSSION_LAYER:
+                    return SEQUENTIAL;
+                case INTERACTION_LAYER:
+                    return PARALLEL;
+                case FLOW_INTERACTION_LAYER:
+                    return SEQUENTIAL;
+                case OBJECT_BURST_LAYER:
+                    return SEQUENTIAL;
+                case BURST_LAYER:
+                    return SEQUENTIAL;
+                case PACKET_LAYER:
+                    return SEQUENTIAL;
+                default:
+                    throw new IllegalArgumentException("Unknown layer: " + Layer);
+            }
+        }
     };
 
-    // Layers with respective types (parallel or sequential children):
-    TokenType ROOT_LAYER_TYPE = TokenType.PARALLEL; // root.
-    TokenType DISCUSSION_LAYER_TYPE = TokenType.SEQUENTIAL; // bidirectional host-to-host pairs
-    TokenType INTERACTION_LAYER_TYPE = TokenType.PARALLEL; // interactions
-    TokenType FLOW_INTERACTION_LAYER_TYPE = TokenType.SEQUENTIAL; // flow interactions
-    TokenType OBJECT_BURST_LAYER_TYPE = TokenType.SEQUENTIAL; // object bursts
-    TokenType BURST_LAYER_TYPE = TokenType.PARALLEL; // bursts
-    TokenType PACKET_LAYER_TYPE = TokenType.SEQUENTIAL; // packets
-
     // Numeric equivalents of each layer:
-    int ROOT_LAYER = 0;
+    int ROOT_LAYER = -1;
+    int ACTIVITY_LAYER = 0;
     int DISCUSSION_LAYER = 1;
     int INTERACTION_LAYER = 2;
     int FLOW_INTERACTION_LAYER = 3;
@@ -70,4 +83,5 @@ public interface Token {
      * Returns a string representation of the token tree.
      */
     public String deepToString();
+
 }

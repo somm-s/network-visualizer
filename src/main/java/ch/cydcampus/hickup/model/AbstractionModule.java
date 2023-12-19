@@ -10,7 +10,7 @@ public class AbstractionModule extends Thread {
     private DataModel dataModel;
     private DataSource dataSource;
     private boolean running = true;
-    private int sizeThreshold = 200;
+    private int sizeThreshold = 150;
 
     public AbstractionModule(DataModel dataModel, DataSource dataSource, CombinationRule combinationRule) {
         this.dataModel = dataModel;

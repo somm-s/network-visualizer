@@ -34,35 +34,49 @@ public class MainApplication extends Application {
     public void start(Stage primaryStage) throws PcapNativeException, NotOpenException, IOException, InterruptedException {
 
         // loading screen
-
         DataModel dataModel = new DataModel();
+        // while(true) {
+        //     Tokenizer tokenizer = new Tokenizer(dataModel);
+        //     tokenizer.start();
+
+        //     DataSource hostToHostSource = new DataBaseSource("localhost", 5432, "ls22", "lab", "lab", "packets", "", "", "", "");
+        //     CombinationRule combinationRule = new SimpleCombinationRule();
+        //     AbstractionModule abstractionModule = new AbstractionModule(dataModel, hostToHostSource, combinationRule);
+        //     abstractionModule.start();
+        //     abstractionModule.join();
+        //     dataModel.finishTokenStream();
+        //     tokenizer.stopThread();
+        // }
 
         // Initialize your model, view, and controller
         View view = new View(primaryStage);
-        // Controller controller = new Controller(view, dataModel);
-        // controller.startApplication();
+        Controller controller = new Controller(view, dataModel);
+        controller.startApplication();
 
 
         // create data structure
-        DataSource hostToHostSource = new DataBaseSource("localhost", 5432, "ls22", "lab", "lab", "packets", "", "", "", "");
-        CombinationRule combinationRule = new SimpleCombinationRule();
-        AbstractionModule abstractionModule = new AbstractionModule(dataModel, hostToHostSource, combinationRule);
-        abstractionModule.start();
-        abstractionModule.join();
-        
-        // collect sizes of object burst layer
-        Callback callback = new LayerStatistics();
-        DataIterator dataIterator = new DataIterator(dataModel, callback, 3);
-        dataIterator.iterate();
-        List<Double> statistics = (List<Double>) callback.getResult();
+        // DataSource hostToHostSource = new DataBaseSource("localhost", 5432, "ls22", "lab", "lab", "packets", "", "", "", "");
+        // CombinationRule combinationRule = new SimpleCombinationRule();
+        // AbstractionModule abstractionModule = new AbstractionModule(dataModel, hostToHostSource, combinationRule);
+        // tokenizer.start();
+        // abstractionModule.start();
+        // abstractionModule.join();
+        // wait for tokenizer to empty queue (5s)
 
-        // convert to double array
-        double[] data = new double[statistics.size()];
-        for(int i = 0; i < statistics.size(); i++) {
-            data[i] = Math.log(statistics.get(i));
-        }
 
-        // scatter plot
-        view.createSimpleHistogram(data, 200);
+        // // collect sizes of object burst layer
+        // Callback callback = new LayerStatistics();
+        // DataIterator dataIterator = new DataIterator(dataModel, callback, 3);
+        // dataIterator.iterate();
+        // List<Double> statistics = (List<Double>) callback.getResult();
+
+        // // convert to double array
+        // double[] data = new double[statistics.size()];
+        // for(int i = 0; i < statistics.size(); i++) {
+        //     data[i] = Math.log(statistics.get(i));
+        // }
+
+        // // scatter plot
+        // view.createSimpleHistogram(data, 200);
     }
 }

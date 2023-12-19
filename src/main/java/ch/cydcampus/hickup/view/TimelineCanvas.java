@@ -26,6 +26,7 @@ public class TimelineCanvas extends Canvas {
     public static final int FLOW_INTERACTION_LAYER_SIZE = 3;
     public static final int INTERACTION_LAYER_SIZE = 4;
     public static final int DISCUSSION_LAYER_SIZE = 5;
+    public static final int ACTIVITY_LAYER_SIZE = 10;
 
     boolean didHover = false;
     double maxVal = 24;
@@ -39,6 +40,7 @@ public class TimelineCanvas extends Canvas {
     long timeInterval = 100000000L; // 100 seconds
     long current = System.currentTimeMillis() * 1000; // set to current time in microseconds every time draw is called
     DataModel model;
+    boolean showActivityLayer = true;
     boolean showPacketLayer = false;
     boolean showBurstLayer = false;
     boolean showObjectBurstLayer = false;
@@ -299,6 +301,9 @@ public class TimelineCanvas extends Canvas {
         } else if(t.getLevel() == Token.DISCUSSION_LAYER && showDiscussionLayer) {
             drawInterval(g, t, DISCUSSION_LAYER_SIZE);
             checkHover(t, Form.INTERVAL, DISCUSSION_LAYER_SIZE);
+        } else if(t.getLevel() == Token.ACTIVITY_LAYER && showActivityLayer) {
+            drawInterval(g, t, ACTIVITY_LAYER_SIZE);
+            checkHover(t, Form.DIAMOND, ACTIVITY_LAYER_SIZE);
         } else {
             // don't draw anything
         }
@@ -419,6 +424,12 @@ public class TimelineCanvas extends Canvas {
             showDiscussionLayer = true;
         } else {
             showDiscussionLayer = false;
+        }
+
+        if(filter.contains("0")) {
+            showActivityLayer = true;
+        } else {
+            showActivityLayer = false;
         }
     }
 

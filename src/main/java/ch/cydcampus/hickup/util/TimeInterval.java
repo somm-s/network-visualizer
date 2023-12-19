@@ -26,8 +26,8 @@ public class TimeInterval implements Comparable<TimeInterval> {
     }
 
     public TimeInterval() {
-        this.start = 0;
-        this.end = 0;
+        this.start = -1; // uninitialized
+        this.end = -1;
     }
 
     public TimeInterval(TimeInterval timeInterval) {
@@ -77,10 +77,20 @@ public class TimeInterval implements Comparable<TimeInterval> {
     }
 
     public boolean doIntersect(TimeInterval other) {
+        if(start == -1 || end == -1 || other.getStart() == -1 || other.getEnd() == -1) {
+            return false;
+        }
+
         return !(start > other.getEnd() || end < other.getStart());
     }
 
     public TimeInterval union(TimeInterval timeInterval) {
+        if(start == -1 || end == -1) {
+            return new TimeInterval(timeInterval);
+        } else if(timeInterval.getStart() == -1 || timeInterval.getEnd() == -1) {
+            return new TimeInterval(this);
+        }
+
         long newStart = Math.min(start, timeInterval.getStart());
         long newEnd = Math.max(end, timeInterval.getEnd());
 
@@ -92,6 +102,9 @@ public class TimeInterval implements Comparable<TimeInterval> {
      * time interval in microseconds. Return 0 if the time intervals overlap.
      */
     public long getDifference(TimeInterval other) {
+        // should not be called on uninitialized time intervals
+        assert start != -1 && end != -1 && other.getStart() != -1 && other.getEnd() != -1;
+
         long difference = 0;
 
         if (other.getStart() > end) {

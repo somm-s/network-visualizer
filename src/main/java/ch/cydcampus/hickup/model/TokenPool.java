@@ -166,6 +166,7 @@ public class TokenPool {
 
     private SequentialToken allocateSequentialToken() {
         SequentialToken token = sequentialTokenQueue.poll();
+
         if (token == null) {
             TokenState tokenState = new TokenState();
             TimeInterval tokenTimeInterval = new TimeInterval();

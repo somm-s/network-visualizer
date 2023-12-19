@@ -21,8 +21,8 @@ public class ParallelToken implements Token{
     public ParallelToken() {
         this.subTokens = new ConcurrentHashMap<String, Token>();
         this.state = new TokenState(0, 0, "", "", 0, 0, TokenState.Protocol.ANY);
-        this.timeInterval = null;
-        this.level = 0;
+        this.timeInterval = new TimeInterval();
+        this.level = -1;
         this.id = counter++;
     }
 
@@ -82,7 +82,7 @@ public class ParallelToken implements Token{
     @Override
     public Token getDecidingChild(Token packetToken) {
         Token decidingChild = null;
-        if(this.level == ROOT_LAYER) {
+        if(this.level == ACTIVITY_LAYER) {
             // get host pair
             String hostToHostIdentifier = packetToken.getState().getHostToHostIdentifier();
             decidingChild = subTokens.get(hostToHostIdentifier);
@@ -99,7 +99,7 @@ public class ParallelToken implements Token{
     @Override
     public synchronized Token createNewSubToken(Token packetToken, TokenPool tokenPool) {
         Token newSubToken = null;
-        if(this.level == ROOT_LAYER) {
+        if(this.level == ACTIVITY_LAYER) {
             String hostToHostIdentifier = packetToken.getState().getHostToHostIdentifier();
             newSubToken = tokenPool.allocateSequentialToken(packetToken, this.level + 1);
             subTokens.put(hostToHostIdentifier, newSubToken);

@@ -14,9 +14,9 @@ public class DoubleInterfaceSource implements DataSource {
     boolean isProducing = true;
     boolean didSleep = false;
 
-    public DoubleInterfaceSource(String receiverInterface, String senderInterface) throws PcapNativeException, NotOpenException  {
-        this.receiverInterface = new NetworkCaptureSource(receiverInterface);
-        this.senderInterface = new NetworkCaptureSource(senderInterface);
+    public DoubleInterfaceSource(String receiverInterface, String senderInterface, String berkleyPacketFilter) throws PcapNativeException, NotOpenException  {
+        this.receiverInterface = new NetworkCaptureSource(receiverInterface, berkleyPacketFilter);
+        this.senderInterface = new NetworkCaptureSource(senderInterface, berkleyPacketFilter);
     }
 
     @Override

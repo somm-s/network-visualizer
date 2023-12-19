@@ -103,8 +103,8 @@ public class View {
         XYChart.Series<String, Number> series = new XYChart.Series<>();
         
         // Calculate bin width
-        double max = getMax(data);
-        double min = getMin(data);
+        double max = 13.7;
+        double min = 5;
         double binWidth = (max - min) / numBuckets;
 
         // Populate histogram series

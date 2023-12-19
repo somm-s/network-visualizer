@@ -2,7 +2,8 @@ package ch.cydcampus.hickup.model;
 
 public class SimpleCombinationRule implements CombinationRule {
 
-    public static final long INTERACTION_TIME_THRESHOLD = 1000000L; // 1 second
+    public static final long ACTIVITY_TIME_THRESHOLD = 1000000L; // 1 second
+    public static final long INTERACTION_TIME_THRESHOLD = 300000L; // 300 millisecond
     public static final long OBJECT_BURST_TIME_THRESHOLD = 30000L; // 30 milliseconds
     public static final long BURST_TIME_THRESHOLD = 1000L; // 1 millisecond
 
@@ -12,6 +13,9 @@ public class SimpleCombinationRule implements CombinationRule {
         TokenState decisionTokenState = decisionToken.getState();
         TokenState newTokenState = newToken.getState();
         switch (decisionToken.getLevel()) { // we never check the root token
+            case Token.ACTIVITY_LAYER: // at activity tokens
+                return decisionToken.getTimeInterval()
+                    .getDifference(newToken.getTimeInterval()) < ACTIVITY_TIME_THRESHOLD;
             case Token.DISCUSSION_LAYER: // at host-to-host tokens
                 return true;
             case Token.INTERACTION_LAYER:

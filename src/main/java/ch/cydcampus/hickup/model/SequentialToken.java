@@ -20,6 +20,15 @@ public class SequentialToken implements Token {
     private int level;
     private int id;
 
+    /* Creates a new root token */
+    public SequentialToken() {
+        this.subTokens = new ConcurrentLinkedDeque<Token>();
+        this.state = new TokenState(0, 0, "", "", 0, 0, TokenState.Protocol.ANY);
+        this.timeInterval = new TimeInterval();
+        this.level = -1;
+        this.id = counter++;
+    }
+
     /*
      * Creates a new token.
      * 
@@ -79,7 +88,7 @@ public class SequentialToken implements Token {
     @Override
     public synchronized Token createNewSubToken(Token packetToken, TokenPool tokenPool) {
         Token newSubToken = null;
-        if(level == DISCUSSION_LAYER) {
+        if(level == ROOT_LAYER || level == DISCUSSION_LAYER) {
             newSubToken = tokenPool.allocateParallelToken(packetToken, level + 1);
             subTokens.add(newSubToken);
         } else if(level == FLOW_INTERACTION_LAYER || 
