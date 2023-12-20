@@ -19,8 +19,6 @@ public interface Token {
         public static TokenType fromLayer(int Layer) {
             switch(Layer) {
                 case ROOT_LAYER:
-                    return SEQUENTIAL;
-                case ACTIVITY_LAYER:
                     return PARALLEL;
                 case DISCUSSION_LAYER:
                     return SEQUENTIAL;
@@ -41,8 +39,7 @@ public interface Token {
     };
 
     // Numeric equivalents of each layer:
-    int ROOT_LAYER = -1;
-    int ACTIVITY_LAYER = 0;
+    int ROOT_LAYER = 0;
     int DISCUSSION_LAYER = 1;
     int INTERACTION_LAYER = 2;
     int FLOW_INTERACTION_LAYER = 3;

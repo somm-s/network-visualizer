@@ -6,16 +6,15 @@ import java.util.Queue;
 
 import ch.cydcampus.hickup.model.Token.TokenType;
 import ch.cydcampus.hickup.util.MultipleReaderRingBuffer;
-import ch.cydcampus.hickup.util.TimeInterval;
 
 /*
  * Token tree in memory that is used to store tokens. Thread-safe.
  */
 public class DataModel {    
 
-    private static final int TOKENIZATION_LEVEL = Token.ACTIVITY_LAYER;
+    private static final int TOKENIZATION_LEVEL = Token.INTERACTION_LAYER;
 
-    private Token root = new SequentialToken();
+    private Token root = new ParallelToken();
     private TokenPool tokenPool = TokenPool.getPool();
     private MultipleReaderRingBuffer ringBuffer = new MultipleReaderRingBuffer(10000);
 
@@ -95,6 +94,6 @@ public class DataModel {
 
     public synchronized void clear() {
         root.deallocate();
-        root = new SequentialToken();
+        root = new ParallelToken();
     }
 }

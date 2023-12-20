@@ -301,9 +301,6 @@ public class TimelineCanvas extends Canvas {
         } else if(t.getLevel() == Token.DISCUSSION_LAYER && showDiscussionLayer) {
             drawInterval(g, t, DISCUSSION_LAYER_SIZE);
             checkHover(t, Form.INTERVAL, DISCUSSION_LAYER_SIZE);
-        } else if(t.getLevel() == Token.ACTIVITY_LAYER && showActivityLayer) {
-            drawInterval(g, t, ACTIVITY_LAYER_SIZE);
-            checkHover(t, Form.DIAMOND, ACTIVITY_LAYER_SIZE);
         } else {
             // don't draw anything
         }
