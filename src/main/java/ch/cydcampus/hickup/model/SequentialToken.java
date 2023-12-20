@@ -16,8 +16,8 @@ public class SequentialToken implements Token {
     private static int counter = 0;
     private ConcurrentLinkedDeque<Token> subTokens;
     private TokenState state;
-    private TimeInterval timeInterval;
-    private int level;
+    private volatile TimeInterval timeInterval;
+    private volatile int level;
     private int id;
 
     /* Creates a new root token */
@@ -54,7 +54,7 @@ public class SequentialToken implements Token {
         return timeInterval;
     }
 
-    public synchronized Collection<Token> getSubTokens() {
+    public Collection<Token> getSubTokens() {
         return subTokens;
     }
 
@@ -86,7 +86,7 @@ public class SequentialToken implements Token {
     }
 
     @Override
-    public synchronized Token createNewSubToken(Token packetToken, TokenPool tokenPool) {
+    public Token createNewSubToken(Token packetToken, TokenPool tokenPool) {
         Token newSubToken = null;
         if(level == DISCUSSION_LAYER) {
             newSubToken = tokenPool.allocateParallelToken(packetToken, level + 1);

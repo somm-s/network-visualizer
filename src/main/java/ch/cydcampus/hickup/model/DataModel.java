@@ -18,7 +18,7 @@ public class DataModel {
     private TokenPool tokenPool = TokenPool.getPool();
     private MultipleReaderRingBuffer ringBuffer = new MultipleReaderRingBuffer(10000);
 
-    public synchronized Token getRoot() {
+    public Token getRoot() {
         return root;
     }
 
@@ -28,7 +28,7 @@ public class DataModel {
      * @param token The token to insert.
      * @param combinationRule The combination rule to use.
      */
-    public synchronized void insertToken(Token packetToken, CombinationRule combinationRule) {
+    public void insertToken(Token packetToken, CombinationRule combinationRule) {
         Token current = root;
         Token child = null;
         do {
@@ -61,7 +61,7 @@ public class DataModel {
         ringBuffer.registerReader();
     }
 
-    public synchronized void finishTokenStream() {
+    public void finishTokenStream() {
         Queue<Collection<Token>> bfsQueue = new LinkedList<>();
         bfsQueue.add(root.getSubTokens());
 
@@ -88,11 +88,11 @@ public class DataModel {
 
     }
 
-    public synchronized String toString() {
+    public String toString() {
         return root.deepToString();
     }
 
-    public synchronized void clear() {
+    public void clear() {
         root.deallocate();
         root = new ParallelToken();
     }

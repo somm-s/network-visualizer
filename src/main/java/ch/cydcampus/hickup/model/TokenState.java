@@ -20,7 +20,7 @@ public class TokenState {
         }
     }
 
-    private long bytes;
+    private volatile long bytes;
     private long numSubTokens;
     private String srcIP;
     private String dstIP;

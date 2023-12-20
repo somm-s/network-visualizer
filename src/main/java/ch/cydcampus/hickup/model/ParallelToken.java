@@ -1,7 +1,6 @@
 package ch.cydcampus.hickup.model;
 
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.concurrent.ConcurrentHashMap;
 
 import ch.cydcampus.hickup.util.TimeInterval;
@@ -11,8 +10,8 @@ public class ParallelToken implements Token{
     private static int counter = 0;
     private ConcurrentHashMap<String, Token> subTokens;
     private TokenState state;
-    private TimeInterval timeInterval;
-    private int level;
+    private volatile TimeInterval timeInterval;
+    private volatile int level;
     private int id;
 
     /*
@@ -64,7 +63,7 @@ public class ParallelToken implements Token{
     }
 
     @Override
-    public synchronized Collection<Token> getSubTokens() {
+    public Collection<Token> getSubTokens() {
         return subTokens.values();
     }
 
@@ -97,7 +96,7 @@ public class ParallelToken implements Token{
     }
 
     @Override
-    public synchronized Token createNewSubToken(Token packetToken, TokenPool tokenPool) {
+    public Token createNewSubToken(Token packetToken, TokenPool tokenPool) {
         Token newSubToken = null;
         if(this.level == ROOT_LAYER) {
             String hostToHostIdentifier = packetToken.getState().getHostToHostIdentifier();
