@@ -4,9 +4,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.Queue;
-
-import com.hickup.points.IPPoint;
-
 import ch.cydcampus.hickup.model.DataModel;
 import ch.cydcampus.hickup.model.Token;
 import ch.cydcampus.hickup.util.TimeInterval;

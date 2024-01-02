@@ -1,0 +1,121 @@
+[
+    {
+        "blocktype": "datasource",
+        "sourcetype" : "sql",
+        "" : ""
+    },
+    {
+        "blocktype" : "feature",
+        "type" : "string",
+        "name" : "internal_host"
+    },
+    {
+        "blocktype" : "feature",
+        "type" : "string",
+        "name" : "external_host"
+    },
+    {
+        "blocktype" : "feature",
+        "type" : "string",
+        "name" : "activity_stream"
+    },
+    {
+        "blocktype" : "feature",
+        "type" : "string",
+        "name" : "stream_identifier"
+    },
+    {
+        "blocktype" : "filter",
+        "type" : "packet_size",
+        "min" : 150,
+        "policy" : "whitelist"
+    },
+    {
+        "blocktype" : "filter",
+        "type" : "time",
+        "min" : "2022-04-18 00:00:00",
+        "max" : "2022-04-22 00:00:00",
+        "policy" : "whitelist"
+    },
+    {
+        "blocktype" : "filter",
+        "type" : "ip",
+        "values" : ["192.168.0.1"],
+        "policy" : "blacklist"
+    },
+    {
+        "blocktype" : "abstractiontree",
+        "nodes" : [
+            {
+                "level" : 0,
+                "name" : "internal host layer",
+                "type" : "spatial",
+                "rule" : {
+                    "type" : "multiplexer",
+                    "attribute" : "internal_host"
+                },
+                "children" : [1, 2]
+            }, 
+            {
+                "level" : 1,
+                "name" : "external host layer",
+                "type" : "spatial",
+                "rule" : {
+                    "type" : "multiplexer",
+                    "attribute" : "external_host"
+                },
+                "children" : [4]
+            },
+            {
+                "level" : 2,
+                "name" : "activity stream layer",
+                "type" : "spatial",
+                "rule" : {
+                    "type" : "multiplexer",
+                    "attribute" : "activity_stream"
+                },
+                "children" : [3]
+            },
+            {
+                "level" : 3,
+                "name" : "activity layer",
+                "type" : "temporal",
+                "rule" : {
+                    "timeout" : 5000000,
+                    "bidirectional" : true
+                },
+                "children" : [4]
+            },
+            {
+                "level" : 4,
+                "name" : "interaction layer",
+                "type" : "temporal",
+                "rule" : {
+                    "timeout" : 1000000,
+                    "bidirectional" : true
+                },
+                "children" : [5]
+            },
+            {
+                "level" : 5,
+                "name" : "flow layer",
+                "type" : "spatial",
+                "rule" : {
+                    "type" : "multiplexer",
+                    "attribute" : "stream_identifier"
+                },
+                "children" : [6]
+            },
+            {
+                "level" : 6,
+                "name" : "burst layer",
+                "type" : "temporal",
+                "rule" : {
+                    "timeout" : 30000,
+                    "bidirectional" : false
+                },
+                "children" : []
+            }
+        ]
+    }
+]

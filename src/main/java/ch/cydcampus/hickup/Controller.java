@@ -57,7 +57,7 @@ public class Controller {
 
     public void loadDataSource(String description, String[] params, String combinationRuleDescription) throws PcapNativeException, NotOpenException, FileNotFoundException {
         
-        int sizeThreshold = 100;
+        int sizeThreshold = 150;
         boolean playingMode = false;
         switch(description) {
             case "Network Capture":

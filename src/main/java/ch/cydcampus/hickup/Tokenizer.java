@@ -38,7 +38,7 @@ public class Tokenizer extends Thread {
 
     private void writeToStream(String streamName, Token token) {
         try {
-            BufferedWriter writer = getStreamWriter("stream"); // TODO change back to streamName
+            BufferedWriter writer = getStreamWriter(streamName);
             writer.write(getTokenString(token));
             writer.flush();
         } catch (IOException e) {
@@ -59,6 +59,8 @@ public class Tokenizer extends Thread {
             return SIZE_TOKENS[index];
         }
     }
+
+
 
     private String getTokenString(Token token) {
         StringBuilder sb = new StringBuilder();

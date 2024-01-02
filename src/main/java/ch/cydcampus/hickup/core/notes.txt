@@ -1,0 +1,4 @@
+Theoretical Considerations of Pipeline Model:
+
+The pipeline representation and the abstraction tree representation are equally powerful (one can be transformed into the other)
+Assumption: Decision in temporal abstraction only based on the new packet and the most recent one of the temporal abstraction.

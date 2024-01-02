@@ -1,0 +1,72 @@
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.DelayQueue;
+import java.util.concurrent.Delayed;
+import java.util.concurrent.TimeUnit;
+
+
+/*
+ * Chosen abstraction level is added to queue upon creation. Afterwards it is popped and
+ * the time until expiration of the temporal abstraction threshold is calculated.
+ * The element is then added to the delay queue and the next element is popped.
+ * 
+ * 
+ * There is a single delay queue for all levels.
+ * 
+ * 
+ */
+public class QueueProcessor {
+    private static final BlockingQueue<DelayedElement> delayQueue = new DelayQueue<>();
+
+    public static void main(String[] args) {
+        // Your code to add elements to the delay queue
+        // delayQueue.put(new DelayedElement(element, delayInMillis));
+
+        // Start the consumer thread
+        new Thread(new Consumer()).start();
+    }
+
+    static class DelayedElement implements Delayed {
+        private Object element;
+        private long delayTime;
+
+        public DelayedElement(Object element, long delayTime) {
+            this.element = element;
+            this.delayTime = System.currentTimeMillis() + delayTime;
+        }
+
+        @Override
+        public long getDelay(TimeUnit unit) {
+            long diff = delayTime - System.currentTimeMillis();
+            return unit.convert(diff, TimeUnit.MILLISECONDS);
+        }
+
+        @Override
+        public int compareTo(Delayed o) {
+            return Long.compare(this.delayTime, ((DelayedElement) o).delayTime);
+        }
+
+        public Object getElement() {
+            return element;
+        }
+    }
+
+    static class Consumer implements Runnable {
+        @Override
+        public void run() {
+            try {
+                while (true) {
+                    DelayedElement delayedElement = delayQueue.take();
+                    Object element = delayedElement.getElement();
+                    
+                    // Process the element (replace with your processing logic)
+                    System.out.println("Processing element: " + element);
+
+                    // Schedule the next task if needed
+                    // delayQueue.put(new DelayedElement(newElement, delayInMillis));
+                }
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+}
