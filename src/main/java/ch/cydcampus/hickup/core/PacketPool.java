@@ -125,7 +125,6 @@ public class PacketPool {
 
     private void populatePacket(Packet packet, long start, long end, long bytes, String srcAddr, String dstAddr, int srcPort, int dstPort, Protocol protocol) throws UnknownHostException {
         packet.setBytes(bytes);
-        packet.setNumSubTokens(0);
         packet.setSrcIP(srcAddr);
         packet.setDstIP(dstAddr);
         packet.setSrcPort(srcPort);

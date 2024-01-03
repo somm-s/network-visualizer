@@ -1,5 +1,6 @@
-package ch.cydcampus.hickup.core;
+package ch.cydcampus.hickup.core.source;
 
+import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -7,8 +8,16 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
-import java.time.Instant;
 import java.util.LinkedList;
+import java.util.Set;
+
+import ch.cydcampus.hickup.core.Packet;
+import ch.cydcampus.hickup.core.PacketPool;
+import ch.cydcampus.hickup.core.filter.Filter;
+import ch.cydcampus.hickup.core.filter.IPFilter;
+import ch.cydcampus.hickup.core.filter.PacketSizeFilter;
+import ch.cydcampus.hickup.core.filter.TimeFilter;
+import ch.cydcampus.hickup.core.filter.Filter.FilterType;
 import ch.cydcampus.hickup.core.Packet.Protocol;
 import ch.cydcampus.hickup.util.TimeInterval;
 
@@ -20,21 +29,14 @@ public class DataBaseSource implements DataSource {
     
     private String query;
     private String querysuffix;
-    private String table;
-    private String observedHostFilter;
-    private String hostFilter;
-    private String startTime;
-    private String endTime;
     private String url;
     private Packet[] points = null;
     private int index = 0;
     private boolean dataLoaded = false;
-    private String portFilter;
 
     private Connection connection;
 
     public DataBaseSource(String host, int port, String database, String user, String password, String table) {
-        this.table = table;
         this.url = "jdbc:postgresql://" + host + ":" + port + "/" + database;
 
         // connect to the database
@@ -52,7 +54,7 @@ public class DataBaseSource implements DataSource {
     @Override
     public Packet consume() throws InterruptedException {
         if(!dataLoaded) {
-            points = getPointsFromSQL(startTime, endTime, hostFilter, observedHostFilter, 0);
+            points = getPointsFromSQL();
             System.out.println("Loaded " + points.length + " points from database.");
             dataLoaded = true;
         }
@@ -61,6 +63,52 @@ public class DataBaseSource implements DataSource {
             return null;
         }
         return points[index++];
+    }
+
+    @Override
+    public void setFilter(Filter filter) {
+    
+        // check type of filter and cast to correct type. Extract filter parameters and convert to sql query conditions.
+        FilterType filterType = filter.getFilterType();
+
+        switch (filterType) {
+            case IP:
+                IPFilter ipFilter = (IPFilter) filter;
+                String negation = ipFilter.isBlacklist() ? "NOT " : "";
+                String connector = ipFilter.isBlacklist() ? " AND " : " OR ";
+                String ips = "(";
+                for (InetAddress ip : ipFilter.getIps()) {
+                    ips += "'" + ip.getHostAddress() + "', ";
+                }
+                ips = ips.substring(0, ips.length() - 2) + ")";
+                query += " AND " + negation + "(src_ip IN " + ips + connector + "dst_ip IN " + ips + ")";
+                break;
+            case PACKET_SIZE:
+                PacketSizeFilter packetSizeFilter = (PacketSizeFilter) filter;
+                query += " AND ";
+                if(packetSizeFilter.isBlacklist()) {
+                    query += "NOT ";
+                }
+                query += "(size >= " + packetSizeFilter.getMinBytes() + " AND size <= " + packetSizeFilter.getMaxBytes() + ")";
+                break;
+            case TIME:
+                TimeFilter timeFilter = (TimeFilter) filter;
+                query += " AND ";
+                if(timeFilter.isBlacklist()) {
+                    query += "NOT ";
+                }
+                query += "(timestamp between '" + timeFilter.getMin() + "' AND '" + timeFilter.getMax() + "')";
+                break;
+            default:
+                throw new UnsupportedOperationException("Filter type " + filterType + " not supported by database source.");
+        }
+        System.out.println(query);
+    }
+
+
+    @Override
+    public Set<FilterType> getSupportedFilters() {
+        return Set.of(FilterType.IP, FilterType.PORT, FilterType.TIME, FilterType.PACKET_SIZE, FilterType.PROTOCOL, FilterType.HOST_PAIR, FilterType.PORT_PAIR);
     }
 
     @Override
@@ -73,39 +121,9 @@ public class DataBaseSource implements DataSource {
         // do nothing
     }
 
+    private Packet[] getPointsFromSQL() {
 
-    private Packet[] getPointsFromSQL(long startTime, long endTime, String observedHost, String dstHost, int limit) {
-        Instant startInstant = TimeInterval.microToInstant(startTime);
-        Instant endInstant = TimeInterval.microToInstant(endTime);
-
-        Timestamp startTimestamp = Timestamp.from(startInstant);
-        Timestamp endTimestamp = Timestamp.from(endInstant);
-
-        return getPointsFromSQL(startTimestamp.toString(), endTimestamp.toString(), observedHost, dstHost, limit);
-    }
-
-    private Packet[] getPointsFromSQL(String startTime, String endTime, String observedHost, String dstHost, int limit) {
-
-        String query = "SELECT * FROM " + table + " WHERE 1 = 1";
-        if(!observedHost.equals("")) {
-            query += " AND (src_ip = '" + observedHost + "' OR dst_ip = '" + observedHost + "')";
-        }
-        if(!dstHost.equals("")) {
-            query += " AND (src_ip = '" + dstHost + "' OR dst_ip = '" + dstHost + "')";
-        }
-        if(!portFilter.equals("")) {
-            query += " AND (src_port = " + portFilter + " OR dst_port = " + portFilter + ")";
-        }
-        if(!startTime.equals("") && !endTime.equals("")) {
-            query += " AND timestamp BETWEEN '" + startTime + "' AND '" + endTime + "'";
-        }
-        query += " ORDER BY timestamp";
-        
-        if (limit > 0) {
-            query += " LIMIT " + limit;
-        }
-        
-        query += ";";
+        String query = this.query + this.querysuffix;
 
         Packet[] res = null;
 
@@ -146,4 +164,5 @@ public class DataBaseSource implements DataSource {
         Packet[] res_arr = new Packet[res.size()];
         return res.toArray(res_arr);
     }
+
 }

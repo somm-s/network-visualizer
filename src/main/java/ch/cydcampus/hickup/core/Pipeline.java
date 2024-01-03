@@ -1,5 +1,13 @@
 package ch.cydcampus.hickup.core;
 
+import java.io.IOException;
+import java.util.List;
+
+import ch.cydcampus.hickup.core.abstraction.AbstractionTree;
+import ch.cydcampus.hickup.core.feature.Feature;
+import ch.cydcampus.hickup.core.filter.Filter;
+import ch.cydcampus.hickup.core.source.DataSource;
+
 /*
  * Full pipeline. Contains the internal state of packets and abstractions as a tree.
  * Contains filter elements and feature enrichment elements for packets.
@@ -17,6 +25,66 @@ package ch.cydcampus.hickup.core;
  */
 public class Pipeline {
     
-    
+    ConfigurationLoader configurationLoader;
+    DataSource dataSource;
+    List<Filter> filters;
+    List<Feature> features;
+    AbstractionTree abstractionTree;
+
+    public Pipeline(String configurationFile) throws IOException {
+        this.configurationLoader = new ConfigurationLoader(configurationFile);
+    }
+
+    public void initialize() {
+        configurationLoader.loadConfiguration();
+        this.dataSource = configurationLoader.getDataSource();
+        this.dataSource.registerReader();
+        this.filters = configurationLoader.getFilters();
+        this.features = configurationLoader.getFeatures();
+        this.abstractionTree = configurationLoader.getAbstractionTree();
+    }
+
+    /*
+     * Processes the next packet from the data source.
+     */
+    public boolean process() throws InterruptedException {
+        Packet packet = dataSource.consume();
+        if(packet != null) {
+            for(Filter filter : filters) {
+                if(filter.filterMatch(packet)) {
+                    return true;
+                }
+            }
+            // // TODO: Implement.
+            // for(Feature feature : features) {
+            //     feature.enrich(packet);
+            // }
+            abstractionTree.addPacket(packet);
+            System.out.println(packet);
+            return true;
+        } 
+        return false;
+    }
+
+    /*
+     * Stops the data source from producing more packets.
+     */
+    public void stop() throws InterruptedException {
+        dataSource.stopProducer();
+        // finish the elements in the consumer buffer
+        // TODO: clean up.
+        while(process());
+    }
+
+    public static void main(String[] args) {
+        try {
+            Pipeline pipeline = new Pipeline("config.json");
+            pipeline.initialize();
+            while(pipeline.process());
+            pipeline.stop();
+        } catch (IOException | InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
 
 }

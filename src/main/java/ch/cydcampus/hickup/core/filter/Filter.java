@@ -1,7 +1,9 @@
-package ch.cydcampus.hickup.core;
+package ch.cydcampus.hickup.core.filter;
+
+import ch.cydcampus.hickup.core.Packet;
 
 /* 
- * A filter is a description of a set of packets to be matched. A filter can be inclusive or exclusive.
+ * A filter is a description of a set of packets to be matched. A filter can be whitelist or blacklist policy.
  */
 public interface Filter {
     

@@ -2,7 +2,10 @@ package ch.cydcampus.hickup.core;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.time.Instant;
+import java.util.Map;
 
+import ch.cydcampus.hickup.core.abstraction.Abstraction;
 import ch.cydcampus.hickup.util.TimeInterval;
 
 public class Packet implements Abstraction {
@@ -19,17 +22,28 @@ public class Packet implements Abstraction {
                     return ANY;
             }
         }
+
+        public static String toString(Protocol protocol) {
+            switch (protocol) {
+                case TCP:
+                    return "TCP";
+                case UDP:
+                    return "UDP";
+                default:
+                    return "ANY";
+            }
+        }
     }
 
     public static enum AttributeType {
         String, Integer, Double, Long, Boolean
     }
 
+    public static Map<String, Integer> attributeIndices;
     public static String[] attributeNames;
     public static AttributeType[] attributeTypes;
 
     private long bytes;
-    private long numSubTokens;
     private InetAddress srcIP;
     private InetAddress dstIP;
     private int srcPort;
@@ -38,6 +52,9 @@ public class Packet implements Abstraction {
     private String[] attributes;
     private TimeInterval timeInterval;
 
+    /*
+     * Static attribute mapping initialized by the configuration loader.
+     */
     public static void setAttributeNames(String[] attributeNames) {
         Packet.attributeNames = attributeNames;
     }
@@ -46,9 +63,15 @@ public class Packet implements Abstraction {
         Packet.attributeTypes = attributeTypes;
     }
 
+    public static void setAttributeIndices(Map<String, Integer> attributeIndices) {
+        Packet.attributeIndices = attributeIndices;
+    }
+
+    /*
+     * Creates a new packet with default values.
+     */
     public Packet() {
         this.bytes = 0;
-        this.numSubTokens = 0;
         this.srcPort = 0;
         this.dstPort = 0;
         this.protocol = Protocol.ANY;
@@ -63,13 +86,29 @@ public class Packet implements Abstraction {
         String dstIP, int srcPort, int dstPort, Protocol protocol) throws UnknownHostException {
         
         this.bytes = bytes;
-        this.numSubTokens = numSubTokens;
         this.srcIP = InetAddress.getByName(srcIP);
         this.dstIP = InetAddress.getByName(dstIP);
         this.srcPort = srcPort;
         this.dstPort = dstPort;
         this.protocol = protocol;
         initializeAttributes();
+    }
+
+    private void initializeAttributes() {
+        if(attributeNames == null) {
+            return;
+        }
+
+        attributes = new String[attributeNames.length];
+        for(int i = 0; i < attributes.length; i++) {
+            attributes[i] = "";
+        }
+    }
+
+    private String getTimeString() {
+        Instant startInstant = TimeInterval.microToInstant(timeInterval.getStart());
+        String timeString = TimeInterval.timeFormatter.format(startInstant);
+        return timeString;
     }
 
     public TimeInterval getTimeInterval() {
@@ -82,14 +121,6 @@ public class Packet implements Abstraction {
 
     public void setBytes(long bytes) {
         this.bytes = bytes;
-    }
-
-    public long getNumSubTokens() {
-        return numSubTokens;
-    }
-
-    public void setNumSubTokens(long numSubTokens) {
-        this.numSubTokens = numSubTokens;
     }
 
     public InetAddress getSrcIP() {
@@ -163,13 +194,20 @@ public class Packet implements Abstraction {
         }
     }
 
+    public int getDirection() {
+        if(srcIP.getHostAddress().compareTo(dstIP.getHostAddress()) < 0) {
+            return 1;
+        } else {
+            return -1;
+        }
+    }
+
     public void addBytesFromOther(Packet packet) {
         this.bytes += packet.getBytes();
     }
 
     public void setContentTo(Packet other) {
         this.bytes = other.getBytes();
-        this.numSubTokens = other.getNumSubTokens();
         this.srcIP = other.getSrcIP();
         this.dstIP = other.getDstIP();
         this.srcPort = other.getSrcPort();
@@ -177,36 +215,78 @@ public class Packet implements Abstraction {
         this.protocol = other.getProtocol();
     }
 
-    public String toString() {
-        return "bytes: " + bytes + ", numSubTokens: " + numSubTokens + ", srcIP: " + srcIP + ", dstIP: " + dstIP + ", srcPort: " + srcPort + ", dstPort: " + dstPort + ", protocol: " + protocol;
-    }
-
-    public void incrementSubTokenCount() {
-        numSubTokens++;
-    }
-
+    
     public void addAttribute(String attributeName, String attributeValue) {
-        if(attributeNames == null) {
-            throw new RuntimeException("Attribute names not set.");
+        if(attributeIndices == null) {
+            throw new RuntimeException("Attributes uninitialized.");
         }
-
-        for(int i = 0; i < attributeNames.length; i++) {
-            if(attributeNames[i].equals(attributeName)) {
-                attributes[i] = attributeValue;
-                return;
-            }
-        }
+        
+        int index = attributeIndices.get(attributeName);
+        attributes[index] = attributeValue;
+    }
+    
+    public String toString() {
+        return "bytes: " + bytes + ", srcIP: " + srcIP + ", dstIP: " + dstIP + ", srcPort: " + srcPort + ", dstPort: " + dstPort + ", protocol: " + protocol + " time: " + getTimeString();
     }
 
-    private void initializeAttributes() {
-        if(attributeNames == null) {
-            return;
+    public String getAttributeString(String attributeName) {
+        if(attributeIndices.containsKey(attributeName)) {
+            return attributes[attributeIndices.get(attributeName)];
         }
 
-        attributes = new String[attributeNames.length];
-        for(int i = 0; i < attributes.length; i++) {
-            attributes[i] = "";
-        }
+        switch(attributeName) {
+            case "bytes":
+                return Long.toString(bytes);
+            case "time":
+                return getTimeString();
+            case "srcIP":
+                return srcIP.getHostAddress();
+            case "dstIP":
+                return dstIP.getHostAddress();
+            case "srcPort":
+                return Integer.toString(srcPort);
+            case "dstPort":
+                return Integer.toString(dstPort);
+            case "protocol":
+                return Protocol.toString(protocol);
+            default:
+                throw new RuntimeException("Unknown attribute: " + attributeName);
+        } 
+    }
+
+    @Override
+    public boolean isRoot() {
+        return false;
+    }
+
+    @Override
+    public boolean isLeaf() {
+        return true;
+    }
+
+    @Override
+    public int getLayer() {
+        return Integer.MAX_VALUE;
+    }
+
+    @Override
+    public void addToState(Packet packet) {
+        throw new RuntimeException("Cannot add packet to packet.");
+    }
+
+    @Override
+    public Packet getLastPacket(int childLayer) {
+        throw new RuntimeException("Cannot get last packet from packet.");
+    }
+
+    @Override
+    public Abstraction getDecidingAbstraction(int childLayer, Packet packet) {
+        throw new RuntimeException("Cannot get deciding abstraction from packet.");
+    }
+
+    @Override
+    public void addChildAbstraction(Abstraction childAbstraction, Packet newPacket) {
+        throw new RuntimeException("Cannot add child abstraction to packet.");
     }
 
 }

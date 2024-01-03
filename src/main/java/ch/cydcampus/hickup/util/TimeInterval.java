@@ -175,4 +175,8 @@ public class TimeInterval implements Comparable<TimeInterval> {
         }
     }
 
+    public boolean contains(TimeInterval other) {
+        return start <= other.getStart() && end >= other.getEnd();
+    }
+
 }
