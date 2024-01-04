@@ -67,6 +67,8 @@ public class TemporalAbstraction implements Abstraction {
         return newestPacket;
     }
 
-    
+    public ConcurrentLinkedDeque<Abstraction> getChildren() {
+        return children;
+    }
 
 }

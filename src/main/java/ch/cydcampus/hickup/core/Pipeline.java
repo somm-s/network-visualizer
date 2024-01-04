@@ -55,10 +55,9 @@ public class Pipeline {
                     return true;
                 }
             }
-            // // TODO: Implement.
-            // for(Feature feature : features) {
-            //     feature.enrich(packet);
-            // }
+            for(Feature feature : features) {
+                feature.enrichFeature(packet);
+            }
             abstractionTree.addPacket(packet);
             System.out.println(packet);
             return true;
@@ -72,13 +71,13 @@ public class Pipeline {
     public void stop() throws InterruptedException {
         dataSource.stopProducer();
         // finish the elements in the consumer buffer
-        // TODO: clean up.
+        // TODO: clean up. This is a hack to make sure all packets are processed.
         while(process());
     }
 
     public static void main(String[] args) {
         try {
-            Pipeline pipeline = new Pipeline("config.json");
+            Pipeline pipeline = new Pipeline("simple_config.json");
             pipeline.initialize();
             while(pipeline.process());
             pipeline.stop();

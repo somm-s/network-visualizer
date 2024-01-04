@@ -1,0 +1,91 @@
+[
+    {
+        "blocktype": "datasource",
+        "sourcetype" : "sql",
+        "host" : "localhost",
+        "port" : 5432,
+        "database" : "ls22",
+        "user" : "lab",
+        "password" : "lab",
+        "table" : "packets"
+    },
+    {
+        "blocktype" : "feature",
+        "type" : "string",
+        "name" : "host_pair_identifier"
+    },
+    {
+        "blocktype" : "feature",
+        "type" : "string",
+        "name" : "flow_identifier"
+    },
+    {
+        "blocktype" : "filter",
+        "type" : "ip",
+        "values" : ["94.246.227.141"],
+        "policy" : "whitelist"
+    },
+    {
+        "blocktype" : "filter",
+        "type" : "packet_size",
+        "min" : "150",
+        "max" : "max",
+        "policy" : "whitelist"
+    },
+    {
+        "blocktype" : "filter",
+        "type" : "time",
+        "min" : "2022-04-20 06:59:39",
+        "max" : "2022-04-20 06:59:41",
+        "policy" : "whitelist"
+    },
+    {
+        "blocktype" : "abstractiontree",
+        "nodes" : [
+            {
+                "layer" : 0,
+                "name" : "host to host layer",
+                "type" : "spatial",
+                "rule" : {
+                    "attribute" : "host_pair_identifier"
+                },
+                "children" : [1]
+            }, 
+            {
+                "layer" : 1,
+                "name" : "interaction layer",
+                "type" : "temporal",
+                "rule" : {
+                    "timeout" : 1000000,
+                    "bidirectional" : true
+                },
+                "children" : [2]
+            },
+            {
+                "layer" : 2,
+                "name" : "flow layer",
+                "type" : "spatial",
+                "rule" : {
+                    "attribute" : "flow_identifier"
+                },
+                "children" : [3]
+            },
+            {
+                "layer" : 3,
+                "name" : "burst layer",
+                "type" : "temporal",
+                "rule" : {
+                    "timeout" : 30000,
+                    "bidirectional" : false
+                },
+                "children" : [4]
+            },
+            {
+                "layer" : 4,
+                "name" : "packet layer",
+                "type" : "packet",
+                "children" : []
+            }
+        ]
+    }
+]

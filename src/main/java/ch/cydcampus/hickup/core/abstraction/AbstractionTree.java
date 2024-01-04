@@ -10,8 +10,8 @@ import ch.cydcampus.hickup.core.abstraction.Node.NodeType;
  */
 public class AbstractionTree {
     
-    Node[] nodes;
-    Abstraction root;
+    private Node[] nodes;
+    private Abstraction root;
 
     public AbstractionTree(Node[] nodes) {
         this.nodes = nodes;
@@ -70,6 +70,10 @@ public class AbstractionTree {
 
         }
 
+    }
+
+    public Abstraction getRoot() {
+        return root;
     }
 
 }

@@ -1,5 +1,8 @@
 package ch.cydcampus.hickup.core.abstraction;
 
+import java.util.Collection;
+import java.util.Map;
+
 import ch.cydcampus.hickup.core.Packet;
 import ch.cydcampus.hickup.util.TimeInterval;
 

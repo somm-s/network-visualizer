@@ -11,6 +11,8 @@ import ch.cydcampus.hickup.core.abstraction.SpatialRule;
 import ch.cydcampus.hickup.core.abstraction.TemporalNode;
 import ch.cydcampus.hickup.core.abstraction.TemporalRule;
 import ch.cydcampus.hickup.core.feature.Feature;
+import ch.cydcampus.hickup.core.feature.FlowIdentifierFeature;
+import ch.cydcampus.hickup.core.feature.HostPairIdentifierFeature;
 import ch.cydcampus.hickup.core.filter.Filter;
 import ch.cydcampus.hickup.core.filter.IPFilter;
 import ch.cydcampus.hickup.core.filter.PacketSizeFilter;
@@ -21,6 +23,7 @@ import ch.cydcampus.hickup.core.source.DataSource;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -79,7 +82,22 @@ public class ConfigurationLoader {
     }
 
     private Feature createFeature(JsonNode featureConfig) {
-        return null;
+        String featureName = featureConfig.get("name").asText();
+
+        Feature feature = null;
+        switch(featureName) {
+            case "host_pair_identifier":
+                feature = new HostPairIdentifierFeature();
+                break;
+            case "flow_identifier":
+                feature = new FlowIdentifierFeature();
+                break;
+            default:
+                System.err.println("Unknown feature name: " + featureName);
+                throw new UnsupportedOperationException("Feature creation failed.");
+        }
+
+        return feature;
     }
 
     private Filter createFilter(JsonNode filterConfig) {
@@ -143,13 +161,11 @@ public class ConfigurationLoader {
     }
 
     private TemporalRule createTemporalRule(JsonNode temporalRuleConfig) {
-        
-        return null;
+        return new TemporalRule(temporalRuleConfig.get("timeout").asLong(), temporalRuleConfig.get("bidirectional").asBoolean());
     }
 
     private SpatialRule createSpatialRule(JsonNode spatialRuleConfig) {
-
-        return null;
+        return new SpatialRule(spatialRuleConfig.get("attribute").asText());
     }
 
     private Node createNode(JsonNode nodeConfig) {
@@ -206,6 +222,19 @@ public class ConfigurationLoader {
                 filterIterator.remove();
             }
         }
+
+        String[] attributeNames = new String[features.size()];
+        HashMap<String, Integer> attributeIndices = new HashMap<>();
+
+
+        // register features at static packet class
+        int i = 0;
+        for(Feature feature : features) {
+            attributeNames[i] = feature.getFeatureName();
+            attributeIndices.put(feature.getFeatureName(), i);
+            i++;
+        }
+        Packet.registerFeatures(attributeNames, attributeIndices);
         createAbstractionTree();
     }
 

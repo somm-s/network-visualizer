@@ -1,7 +1,7 @@
 package ch.cydcampus.hickup.core.abstraction;
 
 import java.util.HashMap;
-import java.util.concurrent.ConcurrentLinkedDeque;
+import java.util.concurrent.ConcurrentHashMap;
 
 import ch.cydcampus.hickup.core.Packet;
 import ch.cydcampus.hickup.util.TimeInterval;
@@ -13,7 +13,7 @@ public class SpatialAbstraction implements Abstraction {
 
     private int layer;
     private SpatialRule rule;
-    private HashMap<Integer, HashMap<String, Abstraction>> children;
+    private HashMap<Integer, ConcurrentHashMap<String, Abstraction>> children;
     private HashMap<Integer, Packet> newestPackets;
     private long bytes;
     private TimeInterval timeInterval;
@@ -26,7 +26,7 @@ public class SpatialAbstraction implements Abstraction {
         this.children = new HashMap<>();
         this.newestPackets = new HashMap<>();
         for(int i = 0; i < numChildren; i++) {
-            children.put(childLayers[i], new HashMap<String, Abstraction>());
+            children.put(childLayers[i], new ConcurrentHashMap<String, Abstraction>());
         }
         this.timeInterval = new TimeInterval();
         this.bytes = 0;
@@ -85,6 +85,9 @@ public class SpatialAbstraction implements Abstraction {
     public Packet getLastPacket(int childLayer) {
         return newestPackets.get(childLayer);
     }
-    
+
+    public HashMap<Integer, ConcurrentHashMap<String, Abstraction>> getChildren() {
+        return children;
+    }
 
 }

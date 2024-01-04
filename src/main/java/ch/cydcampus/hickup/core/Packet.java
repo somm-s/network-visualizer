@@ -41,7 +41,6 @@ public class Packet implements Abstraction {
 
     public static Map<String, Integer> attributeIndices;
     public static String[] attributeNames;
-    public static AttributeType[] attributeTypes;
 
     private long bytes;
     private InetAddress srcIP;
@@ -55,15 +54,8 @@ public class Packet implements Abstraction {
     /*
      * Static attribute mapping initialized by the configuration loader.
      */
-    public static void setAttributeNames(String[] attributeNames) {
+    public static void registerFeatures(String[] attributeNames, Map<String, Integer> attributeIndices) {
         Packet.attributeNames = attributeNames;
-    }
-
-    public static void setAttributeTypes(AttributeType[] attributeTypes) {
-        Packet.attributeTypes = attributeTypes;
-    }
-
-    public static void setAttributeIndices(Map<String, Integer> attributeIndices) {
         Packet.attributeIndices = attributeIndices;
     }
 
@@ -226,7 +218,14 @@ public class Packet implements Abstraction {
     }
     
     public String toString() {
-        return "bytes: " + bytes + ", srcIP: " + srcIP + ", dstIP: " + dstIP + ", srcPort: " + srcPort + ", dstPort: " + dstPort + ", protocol: " + protocol + " time: " + getTimeString();
+        // print attributes in hashmap:
+        String attributesString = "\n";
+        if(attributeIndices != null) {
+            for(String attributeName : attributeIndices.keySet()) {
+                attributesString += attributeName + ": " + getAttributeString(attributeName) + ", ";
+            }
+        }
+        return "bytes: " + bytes + ", srcIP: " + srcIP + ", dstIP: " + dstIP + ", srcPort: " + srcPort + ", dstPort: " + dstPort + ", protocol: " + protocol + " time: " + getTimeString() + attributesString;
     }
 
     public String getAttributeString(String attributeName) {
