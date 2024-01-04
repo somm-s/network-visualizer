@@ -27,19 +27,21 @@ public class AbstractionTree {
         
         Abstraction[] current = new Abstraction[nodes.length];
         current[0] = root;
+        System.out.println("Adding packet: " + packet);
         for(int i = 0; i < nodes.length; i++) {
+            System.out.println("\n\nIteration " + i + " with node " + nodes[i].getLayer() + " and type " + nodes[i].getNodeType());
             if(nodes[i].getNodeType() == NodeType.PacketNode) {
                 continue;
             }
 
+            System.out.println("Adding packet to state " + current[i]);
             current[i].addToState(packet);
-
-            if(nodes[i].getChildren().length == 0) { // last abstraction before packet layer
-
-            }
+            System.out.println("Added to state " + current[i]);
 
             for(int childLayer : nodes[i].getChildren()) {
+                System.out.println("Child layer: " + childLayer);
                 Abstraction child = current[i].getDecidingAbstraction(childLayer, packet);
+                System.out.println("Deciding abstraction: " + child);
                 
                 boolean createNewChild = false;
                 if(child != null && nodes[i].getNodeType() == NodeType.TemporalAbstractionNode) {
@@ -47,6 +49,7 @@ public class AbstractionTree {
                 } else if(child == null) {
                     createNewChild = true;
                 }
+                System.out.println("Create new child: " + createNewChild);
 
                 if(createNewChild) {
 
@@ -63,6 +66,8 @@ public class AbstractionTree {
                     }
 
                     current[i].addChildAbstraction(child, packet);
+                }else if(nodes[childLayer].getNodeType() == NodeType.PacketNode) {
+                    current[i].addChildAbstraction(child, packet);
                 }
 
                 current[childLayer] = child;
@@ -74,6 +79,10 @@ public class AbstractionTree {
 
     public Abstraction getRoot() {
         return root;
+    }
+
+    public Node[] getNodes() {
+        return nodes;
     }
 
 }

@@ -8,7 +8,7 @@ import ch.cydcampus.hickup.util.TimeInterval;
 public class TemporalAbstraction implements Abstraction {
 
     private int layer;
-    private long bytes;
+    private volatile long bytes;
     private TimeInterval timeInterval;
     private ConcurrentLinkedDeque<Abstraction> children;
     private Packet newestPacket;
@@ -47,7 +47,7 @@ public class TemporalAbstraction implements Abstraction {
 
     @Override
     public void addToState(Packet packet) {
-        this.timeInterval.union(packet.getTimeInterval());
+        this.timeInterval.addInterval(packet.getTimeInterval());
         this.bytes += packet.getBytes();
     }
 
@@ -69,6 +69,22 @@ public class TemporalAbstraction implements Abstraction {
 
     public ConcurrentLinkedDeque<Abstraction> getChildren() {
         return children;
+    }
+
+    public String toString() {
+        return timeInterval + " Bytes=" + bytes + " Childrens=" + children.size();
+    }
+
+    public StringBuilder deepToString(StringBuilder sb) {
+        sb.append(this.toString());
+        sb.append("\n");
+        for(Abstraction child : children) {
+            for(int i = 0; i < layer; i++) {
+                sb.append("  ");
+            }
+            child.deepToString(sb);
+        }
+        return sb;
     }
 
 }

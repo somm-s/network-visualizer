@@ -8,7 +8,7 @@ import java.time.temporal.ChronoField;
 import java.util.TimeZone;
 
 /*
- * Represents a microsecond precision time interval and provides methods for conversion.
+ * Represents a microsecond precision time interval and provides methods for conversion. Thread safe.
  */
 public class TimeInterval implements Comparable<TimeInterval> {
 
@@ -18,8 +18,8 @@ public class TimeInterval implements Comparable<TimeInterval> {
         .toFormatter()
         .withZone(TimeZone.getTimeZone("UTC").toZoneId());
 
-    private long start;
-    private long end;
+    private volatile long start;
+    private volatile long end;
 
     public static long timeToMicro(Timestamp timestamp) {
         return timestamp.getTime() * 1000 + (timestamp.getNanos() / 1000) % 1000;
@@ -95,6 +95,19 @@ public class TimeInterval implements Comparable<TimeInterval> {
         long newEnd = Math.max(end, timeInterval.getEnd());
 
         return new TimeInterval(newStart, newEnd);
+    }
+
+    public void addInterval(TimeInterval other) {
+        if(start == -1 || end == -1) {
+            setContentTo(other);
+            return;
+        }
+
+        long newStart = Math.min(start, other.getStart());
+        long newEnd = Math.max(end, other.getEnd());
+
+        this.start = newStart < 0 ? this.start : newStart;
+        this.end = newEnd < 0 ? this.end : newEnd;
     }
 
     /*

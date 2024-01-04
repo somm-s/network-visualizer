@@ -15,7 +15,7 @@ public class SpatialAbstraction implements Abstraction {
     private SpatialRule rule;
     private HashMap<Integer, ConcurrentHashMap<String, Abstraction>> children;
     private HashMap<Integer, Packet> newestPackets;
-    private long bytes;
+    private volatile long bytes;
     private TimeInterval timeInterval;
 
 
@@ -59,7 +59,7 @@ public class SpatialAbstraction implements Abstraction {
 
     @Override
     public void addToState(Packet packet) {
-        this.timeInterval.union(packet.getTimeInterval());
+        this.timeInterval.addInterval(packet.getTimeInterval());
         this.bytes += packet.getBytes();
     }
 
@@ -88,6 +88,24 @@ public class SpatialAbstraction implements Abstraction {
 
     public HashMap<Integer, ConcurrentHashMap<String, Abstraction>> getChildren() {
         return children;
+    }
+
+    public String toString() {
+        return "SpatialAbstraction(layer=" + layer  + " newestPackets=" + newestPackets + ", bytes=" + bytes + ", timeInterval=" + timeInterval + ")";
+    }
+
+    public StringBuilder deepToString(StringBuilder sb) {
+        for(int childLayer : children.keySet()) {
+            // sb.append("\n\n");
+            for(String identifier : children.get(childLayer).keySet()) {
+                sb.append("Layer: " + childLayer + " Identifier: " + identifier + "\n");
+                for(int i = 0; i < layer; i++) {
+                    sb.append("  ");
+                }
+                children.get(childLayer).get(identifier).deepToString(sb);
+            }
+        }
+        return sb;
     }
 
 }

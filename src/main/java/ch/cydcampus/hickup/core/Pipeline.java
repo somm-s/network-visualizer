@@ -3,6 +3,7 @@ package ch.cydcampus.hickup.core;
 import java.io.IOException;
 import java.util.List;
 
+import ch.cydcampus.hickup.core.abstraction.Abstraction;
 import ch.cydcampus.hickup.core.abstraction.AbstractionTree;
 import ch.cydcampus.hickup.core.feature.Feature;
 import ch.cydcampus.hickup.core.filter.Filter;
@@ -59,7 +60,6 @@ public class Pipeline {
                 feature.enrichFeature(packet);
             }
             abstractionTree.addPacket(packet);
-            System.out.println(packet);
             return true;
         } 
         return false;
@@ -76,14 +76,23 @@ public class Pipeline {
     }
 
     public static void main(String[] args) {
+        Pipeline pipeline = null;
         try {
-            Pipeline pipeline = new Pipeline("simple_config.json");
+            pipeline = new Pipeline("simple_config.json");
             pipeline.initialize();
             while(pipeline.process());
             pipeline.stop();
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
         }
+
+        Abstraction root = pipeline.abstractionTree.getRoot();
+        StringBuilder sb = new StringBuilder();
+        System.out.println(root.deepToString(sb).toString());
     }
+
+
+
+    
 
 }

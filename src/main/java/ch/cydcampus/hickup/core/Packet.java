@@ -219,7 +219,7 @@ public class Packet implements Abstraction {
     
     public String toString() {
         // print attributes in hashmap:
-        String attributesString = "\n";
+        String attributesString = " ";
         if(attributeIndices != null) {
             for(String attributeName : attributeIndices.keySet()) {
                 attributesString += attributeName + ": " + getAttributeString(attributeName) + ", ";
@@ -286,6 +286,13 @@ public class Packet implements Abstraction {
     @Override
     public void addChildAbstraction(Abstraction childAbstraction, Packet newPacket) {
         throw new RuntimeException("Cannot add child abstraction to packet.");
+    }
+
+    @Override
+    public StringBuilder deepToString(StringBuilder sb) {
+        sb.append("" + bytes + " [" + getTimeString() + "] " + getDirection());
+        sb.append("\n");
+        return sb;
     }
 
 }
