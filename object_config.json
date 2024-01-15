@@ -44,44 +44,35 @@
         "nodes" : [
             {
                 "layer" : 0,
-                "name" : "host to host layer",
+                "name" : "flow layer",
                 "type" : "spatial",
                 "rule" : {
-                    "attribute" : "host_pair_identifier"
+                    "attribute" : "flow_identifier"
                 },
-                "children" : [1]
-            }, 
+                "children" : [2]
+            },
             {
                 "layer" : 1,
-                "name" : "interaction layer",
+                "name" : "combined burst layer",
                 "type" : "temporal",
                 "rule" : {
-                    "timeout" : 1000000,
+                    "timeout" : -9999999,
                     "bidirectional" : true
                 },
                 "children" : [2]
             },
             {
                 "layer" : 2,
-                "name" : "flow layer",
-                "type" : "spatial",
-                "rule" : {
-                    "attribute" : "flow_identifier"
-                },
-                "children" : [3]
-            },
-            {
-                "layer" : 3,
                 "name" : "burst layer",
                 "type" : "temporal",
                 "rule" : {
                     "timeout" : 30000,
                     "bidirectional" : false
                 },
-                "children" : [4]
+                "children" : [3]
             },
             {
-                "layer" : 4,
+                "layer" : 3,
                 "name" : "packet layer",
                 "type" : "packet",
                 "children" : []

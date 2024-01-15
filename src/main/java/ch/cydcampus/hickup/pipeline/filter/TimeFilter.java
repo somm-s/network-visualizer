@@ -1,4 +1,4 @@
-package ch.cydcampus.hickup.core.filter;
+package ch.cydcampus.hickup.pipeline.filter;
 
 import ch.cydcampus.hickup.core.Packet;
 import ch.cydcampus.hickup.util.TimeInterval;

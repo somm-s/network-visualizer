@@ -78,7 +78,7 @@ public class Pipeline {
     public static void main(String[] args) {
         Pipeline pipeline = null;
         try {
-            pipeline = new Pipeline("simple_config.json");
+            pipeline = new Pipeline("object_config.json");
             pipeline.initialize();
             while(pipeline.process());
             pipeline.stop();
@@ -86,13 +86,12 @@ public class Pipeline {
             e.printStackTrace();
         }
 
-        Abstraction root = pipeline.abstractionTree.getRoot();
-        StringBuilder sb = new StringBuilder();
-        System.out.println(root.deepToString(sb).toString());
+        Abstraction root = pipeline.abstractionTree.getRoot(1);
+        System.out.println(root);
+        System.out.println(pipeline.abstractionTree.getRoot(0));
+        Tokenizer tokenizer = new Tokenizer(root, 3);
+        tokenizer.tokenize();
+        // StringBuilder sb = new StringBuilder();
+        // System.out.println(root.deepToString(sb).toString());
     }
-
-
-
-    
-
 }
